@@ -46,3 +46,8 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 contracts/lib/
+
+# Playwright
+playwright-report/
+blob-report/
+test-results/
