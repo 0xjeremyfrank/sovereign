@@ -11,8 +11,23 @@
     "node": ">=18.18.0"
   },
   "scripts": {
-    "build": "echo \"root: nothing to build yet\"",
-    "lint": "echo \"root: no lint configured yet\"",
-    "test": "echo \"root: no tests yet\""
+    "build": "yarn workspaces foreach -pt -A run build",
+    "test": "yarn workspaces foreach -pt -A run test",
+    "lint": "yarn workspaces foreach -pt -A run lint",
+    "lint:root": "eslint . --ext .js,.cjs,.ts,.tsx --max-warnings=0 --cache",
+    "format": "prettier -c .",
+    "format:write": "prettier -w .",
+    "format:all": "yarn workspaces foreach -pt -A run format",
+    "typecheck": "yarn workspaces foreach -pt -A run typecheck"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "prettier": "^3.3.3"
   }
 }
