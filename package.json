@@ -6,7 +6,7 @@
     "packages/*",
     "contracts"
   ],
-  "packageManager": "yarn@4.3.1",
+  "packageManager": "yarn@4.9.2",
   "engines": {
     "node": ">=18.18.0"
   },
