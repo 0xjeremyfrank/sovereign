@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateRegionMap } from './region';
+import { generateRegionMap } from '../src/region';
 
 describe('region generation', () => {
   it('is deterministic for same seed/size', () => {

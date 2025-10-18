@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeBoard, encodeBoard } from './encode';
+import { decodeBoard, encodeBoard } from '../src/encode';
 
 describe('encode/decode', () => {
   it('round-trips', () => {

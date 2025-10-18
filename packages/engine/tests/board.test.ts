@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createEmptyBoard, cycleCellState, clearBoard, undoMove } from './board';
+import { createEmptyBoard, cycleCellState, clearBoard, undoMove } from '../src/board';
 
 describe('board operations', () => {
   describe('createEmptyBoard', () => {

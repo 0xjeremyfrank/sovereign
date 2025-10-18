@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { validateBoard } from './validate';
-import { createEmptyBoard, placeSovereign } from './board';
+import { validateBoard } from '../src/validate';
+import { createEmptyBoard, placeSovereign } from '../src/board';
 
 const makeRegion = (size: number) => ({
   width: size,
