@@ -9,25 +9,29 @@ export const validateBoard = (board: BoardState, region: RegionMap): ValidationR
   const occupied = new Set<number>();
   const violations: ValidationViolation[] = [];
 
-  // place coordinates
+  // Extract sovereign positions from cells array (ignore 'marked' cells, treat as blank)
   const positions: Array<[number, number]> = [];
   for (let r = 0; r < size; r++) {
-    const cMaybe = board.sovereigns[r];
-    if (typeof cMaybe === 'number' && cMaybe >= 0) {
-      const c = cMaybe;
-      positions.push([r, c]);
-      occupied.add(linear(r, c, size));
+    for (let c = 0; c < size; c++) {
+      const idx = linear(r, c, size);
+      const cellState = board.cells[idx];
 
-      // track column cells
-      const colCells = colsToCells.get(c) ?? [];
-      colCells.push(linear(r, c, size));
-      colsToCells.set(c, colCells);
+      // Only process 'sovereign' cells; 'marked' and 'blank' are ignored
+      if (cellState === 'sovereign') {
+        positions.push([r, c]);
+        occupied.add(idx);
 
-      // track region cells
-      const regId = region.regions[linear(r, c, size)]!;
-      const regCells = regionToCells.get(regId) ?? [];
-      regCells.push(linear(r, c, size));
-      regionToCells.set(regId, regCells);
+        // track column cells
+        const colCells = colsToCells.get(c) ?? [];
+        colCells.push(idx);
+        colsToCells.set(c, colCells);
+
+        // track region cells
+        const regId = region.regions[idx]!;
+        const regCells = regionToCells.get(regId) ?? [];
+        regCells.push(idx);
+        regionToCells.set(regId, regCells);
+      }
     }
   }
 
