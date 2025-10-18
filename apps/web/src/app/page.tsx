@@ -2,13 +2,17 @@
 
 import React from 'react';
 import { Grid } from '../components/grid';
+import { Toolbar } from '../components/toolbar';
 import { useBoard } from '../hooks/use-board';
 
 const Home = () => {
-  const { board, regionMap, validation, onPlace, onRemove } = useBoard('demo-seed', 6);
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const initial = params.get('state');
+  const { board, regionMap, validation, onPlace, onRemove } = useBoard('demo-seed', 6, initial);
   return (
     <main style={{ padding: 16 }}>
       <h1>Sovereign</h1>
+      <Toolbar board={board} />
       <Grid
         board={board}
         regionMap={regionMap}
@@ -16,9 +20,6 @@ const Home = () => {
         onPlace={onPlace}
         onRemove={onRemove}
       />
-      <p style={{ marginTop: 8 }}>
-        Valid: {String(validation.isValid)} | Complete: {String(validation.isComplete)}
-      </p>
     </main>
   );
 };

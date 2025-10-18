@@ -5,14 +5,24 @@ import {
   placeSovereign,
   removeSovereign,
   validateBoard,
+  decodeBoard,
   type BoardState,
   type RegionMap,
   type ValidationResult,
 } from '@sovereign/engine';
 
-export const useBoard = (seed: string, size: number) => {
+export const useBoard = (seed: string, size: number, initialEncoded?: string | null) => {
   const regionMap: RegionMap = useMemo(() => generateRegionMap(seed, size), [seed, size]);
-  const [board, setBoard] = useState<BoardState>(() => createEmptyBoard(size));
+  const [board, setBoard] = useState<BoardState>(() => {
+    if (initialEncoded) {
+      try {
+        return decodeBoard(initialEncoded, size);
+      } catch {
+        // fall through to empty
+      }
+    }
+    return createEmptyBoard(size);
+  });
   const validation: ValidationResult = useMemo(
     () => validateBoard(board, regionMap),
     [board, regionMap],
