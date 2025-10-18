@@ -4,13 +4,16 @@ export interface RegionMap {
   regions: number[]; // length = width * height; region id per cell
 }
 
+// Three-state cell for UI/engine interoperability
+export type CellState = 'blank' | 'marked' | 'sovereign';
+
 export interface BoardState {
   size: number;
-  // For each row, the column index (0..size-1) or -1 if empty
-  sovereigns: number[];
+  cells: CellState[]; // length = size * size
+  history: CellState[][]; // stack of previous cell arrays for undo
 }
 
-export type RuleType = 'column' | 'region' | 'adjacent';
+export type RuleType = 'column' | 'region' | 'adjacent' | 'contiguous';
 
 export interface ValidationViolation {
   rule: RuleType;
