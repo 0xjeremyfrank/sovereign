@@ -1049,17 +1049,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.56.1":
-  version: 1.56.1
-  resolution: "@playwright/test@npm:1.56.1"
-  dependencies:
-    playwright: "npm:1.56.1"
-  bin:
-    playwright: cli.js
-  checksum: 10c0/2b5b0e1f2e6a18f6e5ce6897c7440ca78f64e0b004834e9808e93ad2b78b96366b562ae4366602669cf8ad793a43d85481b58541e74be71e905e732d833dd691
-  languageName: node
-  linkType: hard
-
 "@rollup/rollup-android-arm-eabi@npm:4.52.4":
   version: 4.52.4
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.52.4"
@@ -1243,7 +1232,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sovereign/engine@workspace:packages/engine":
+"@sovereign/engine@workspace:*, @sovereign/engine@workspace:packages/engine":
   version: 0.0.0-use.local
   resolution: "@sovereign/engine@workspace:packages/engine"
   dependencies:
@@ -4844,7 +4833,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:1.56.1, playwright@npm:^1.49.1":
+"playwright@npm:^1.56.1":
   version: 1.56.1
   resolution: "playwright@npm:1.56.1"
   dependencies:
@@ -6118,11 +6107,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.6.3#optional!builtin<compat/typescript>":
   version: 5.9.3
-  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=379a07"
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/6f7e53bf0d9702350deeb6f35e08b69cbc8b958c33e0ec77bdc0ad6a6c8e280f3959dcbfde6f5b0848bece57810696489deaaa53d75de3578ff255d168c1efbd
+  checksum: 10c0/ad09fdf7a756814dce65bc60c1657b40d44451346858eea230e10f2e95a289d9183b6e32e5c11e95acc0ccc214b4f36289dcad4bf1886b0adb84d711d336a430
   languageName: node
   linkType: hard
 
@@ -6367,7 +6356,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "web@workspace:apps/web"
   dependencies:
-    "@playwright/test": "npm:^1.56.1"
+    "@sovereign/engine": "workspace:*"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.6.3"
     "@testing-library/react": "npm:^16.2.0"
@@ -6379,7 +6368,7 @@ __metadata:
     eslint-config-next: "npm:15.5.6"
     jsdom: "npm:^25.0.1"
     next: "npm:15.5.6"
-    playwright: "npm:^1.49.1"
+    playwright: "npm:^1.56.1"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
     typescript: "npm:^5"

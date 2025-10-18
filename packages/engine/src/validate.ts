@@ -4,8 +4,8 @@ const linear = (r: number, c: number, size: number) => r * size + c;
 
 export const validateBoard = (board: BoardState, region: RegionMap): ValidationResult => {
   const size = board.size;
-  const cols = new Map<number, number>();
-  const regions = new Map<number, number>();
+  const colsToCells = new Map<number, number[]>();
+  const regionToCells = new Map<number, number[]>();
   const occupied = new Set<number>();
   const violations: ValidationViolation[] = [];
 
@@ -17,21 +17,31 @@ export const validateBoard = (board: BoardState, region: RegionMap): ValidationR
       const c = cMaybe;
       positions.push([r, c]);
       occupied.add(linear(r, c, size));
+
+      // track column cells
+      const colCells = colsToCells.get(c) ?? [];
+      colCells.push(linear(r, c, size));
+      colsToCells.set(c, colCells);
+
+      // track region cells
+      const regId = region.regions[linear(r, c, size)]!;
+      const regCells = regionToCells.get(regId) ?? [];
+      regCells.push(linear(r, c, size));
+      regionToCells.set(regId, regCells);
     }
   }
 
-  // column & region uniqueness
-  for (const [r, c] of positions) {
-    const colCount = (cols.get(c) ?? 0) + 1;
-    cols.set(c, colCount);
-    if (colCount > 1) {
-      violations.push({ rule: 'column', cells: [linear(r, c, size)] });
+  // column uniqueness: mark all cells in conflicting columns
+  for (const [, cells] of colsToCells) {
+    if (cells.length > 1) {
+      violations.push({ rule: 'column', cells: Array.from(new Set(cells)) });
     }
-    const regionId = region.regions[linear(r, c, size)]!;
-    const regCount = (regions.get(regionId) ?? 0) + 1;
-    regions.set(regionId, regCount);
-    if (regCount > 1) {
-      violations.push({ rule: 'region', cells: [linear(r, c, size)] });
+  }
+
+  // region uniqueness: mark all cells in conflicting regions
+  for (const [, cells] of regionToCells) {
+    if (cells.length > 1) {
+      violations.push({ rule: 'region', cells: Array.from(new Set(cells)) });
     }
   }
 
