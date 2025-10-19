@@ -1,5 +1,5 @@
 import { createRng } from './prng';
-import { findValidSolution } from './solver';
+import { findValidSolution, findAllSolutions } from './solver';
 import type { RegionMap } from './types';
 
 const linear = (row: number, col: number, size: number): number => row * size + col;
@@ -111,7 +111,90 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
     }
   }
 
-  return { width: size, height: size, regions };
+  // Ensure uniqueness by adjusting regions to eliminate alternative solutions
+  let regionMap: RegionMap = { width: size, height: size, regions: [...regions] };
+  let attempts = 0;
+  const maxAttempts = 200;
+
+  while (attempts < maxAttempts) {
+    const allSolutions = findAllSolutions(regionMap);
+
+    if (allSolutions.length === 1) {
+      // Success! Unique solution found
+      break;
+    }
+
+    if (allSolutions.length === 0) {
+      // We broke the puzzle, revert and try something else
+      // This shouldn't happen with careful merging
+      console.warn('Puzzle became unsolvable during uniqueness enforcement');
+      break;
+    }
+
+    // Find alternative solutions (not the intended one)
+    const alternativeSolutions = allSolutions.filter(
+      (sol) => JSON.stringify(sol) !== JSON.stringify(solution),
+    );
+
+    if (alternativeSolutions.length === 0) break;
+
+    // Try to find a cell swap that eliminates alternatives
+    // Check all alternative solutions, not just the first one
+    let bestSwap: { regions: number[]; count: number } | null = null;
+
+    for (const altSol of alternativeSolutions) {
+      for (let row = 0; row < size; row++) {
+        const altCol = altSol[row]!;
+        const intendedCol = solution[row]!;
+
+        if (altCol !== intendedCol) {
+          const altIdx = linear(row, altCol, size);
+          const intendedIdx = linear(row, intendedCol, size);
+
+          const altRegion = regionMap.regions[altIdx]!;
+          const intendedRegion = regionMap.regions[intendedIdx]!;
+
+          // Try swapping this cell into the intended region
+          if (altRegion !== intendedRegion) {
+            const newRegions = [...regionMap.regions];
+            newRegions[altIdx] = intendedRegion;
+
+            // Test if this change still allows the intended solution AND maintains contiguity
+            const testMap: RegionMap = { width: size, height: size, regions: newRegions };
+
+            // Check contiguity first (faster than finding all solutions)
+            if (!areRegionsContiguous(testMap)) {
+              continue; // Skip this swap if it breaks contiguity
+            }
+
+            const testSolutions = findAllSolutions(testMap);
+            const hasIntended = testSolutions.some(
+              (sol) => JSON.stringify(sol) === JSON.stringify(solution),
+            );
+
+            if (hasIntended && testSolutions.length < allSolutions.length) {
+              // Track the best swap (one that reduces solutions the most)
+              if (!bestSwap || testSolutions.length < bestSwap.count) {
+                bestSwap = { regions: newRegions, count: testSolutions.length };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (bestSwap) {
+      // Apply the best swap we found
+      regionMap.regions = bestSwap.regions;
+    } else {
+      // Couldn't make progress, stop trying
+      break;
+    }
+
+    attempts++;
+  }
+
+  return regionMap;
 };
 
 /**

@@ -1,4 +1,5 @@
 import { createRng } from './prng';
+import type { RegionMap } from './types';
 
 /**
  * Find a valid n-Queens-style solution for a given size
@@ -74,4 +75,76 @@ export const findValidSolution = (seed: string, size: number): number[] => {
   }
 
   return solution;
+};
+
+/**
+ * Find all valid solutions for a given region map
+ * Used to verify puzzle uniqueness
+ */
+export const findAllSolutions = (regionMap: RegionMap): number[][] => {
+  const size = regionMap.width;
+  const solutions: number[][] = [];
+  const currentSolution: number[] = [];
+  const usedCols = new Set<number>();
+
+  const linear = (row: number, col: number): number => row * size + col;
+
+  const isValidPlacement = (row: number, col: number): boolean => {
+    // Check column
+    if (usedCols.has(col)) return false;
+
+    // Check adjacency with previously placed sovereigns
+    for (let r = 0; r < row; r++) {
+      const c = currentSolution[r]!;
+      const rowDiff = Math.abs(row - r);
+      const colDiff = Math.abs(col - c);
+
+      // Must not be adjacent (including diagonals)
+      if (rowDiff <= 1 && colDiff <= 1) {
+        return false;
+      }
+    }
+
+    // Check region constraint
+    const currentRegion = regionMap.regions[linear(row, col)]!;
+    for (let r = 0; r < row; r++) {
+      const c = currentSolution[r]!;
+      const otherRegion = regionMap.regions[linear(r, c)]!;
+      if (currentRegion === otherRegion) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const backtrack = (row: number): void => {
+    if (row === size) {
+      solutions.push([...currentSolution]);
+      return;
+    }
+
+    for (let col = 0; col < size; col++) {
+      if (isValidPlacement(row, col)) {
+        currentSolution[row] = col;
+        usedCols.add(col);
+
+        backtrack(row + 1);
+
+        currentSolution.pop();
+        usedCols.delete(col);
+      }
+    }
+  };
+
+  backtrack(0);
+  return solutions;
+};
+
+/**
+ * Check if a region map has exactly one solution
+ */
+export const hasUniqueSolution = (regionMap: RegionMap): boolean => {
+  const solutions = findAllSolutions(regionMap);
+  return solutions.length === 1;
 };
