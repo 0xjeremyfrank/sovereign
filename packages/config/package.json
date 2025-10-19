@@ -2,20 +2,23 @@
   "name": "@sovereign/config",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "exports": {
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./eslint.base.cjs": "./eslint.base.cjs",
+    "./eslint.config.base.js": "./eslint.config.base.js",
     "./prettier.config.cjs": "./prettier.config.cjs"
   },
   "peerDependencies": {
-    "@typescript-eslint/eslint-plugin": ">=6",
-    "@typescript-eslint/parser": ">=6",
-    "eslint": ">=8",
+    "@eslint/js": ">=9",
+    "@typescript-eslint/eslint-plugin": ">=8",
+    "@typescript-eslint/parser": ">=8",
+    "eslint": ">=9",
     "eslint-config-prettier": ">=9",
     "eslint-plugin-jsx-a11y": ">=6",
     "eslint-plugin-react": ">=7",
-    "eslint-plugin-react-hooks": ">=4",
+    "eslint-plugin-react-hooks": ">=5",
     "prettier": ">=3"
   }
 }

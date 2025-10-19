@@ -21,6 +21,7 @@
     "typecheck": "yarn workspaces foreach -pt -A run typecheck"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
     "eslint": "^9.38.0",

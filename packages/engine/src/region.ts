@@ -112,7 +112,7 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
   }
 
   // Ensure uniqueness by adjusting regions to eliminate alternative solutions
-  let regionMap: RegionMap = { width: size, height: size, regions: [...regions] };
+  const regionMap: RegionMap = { width: size, height: size, regions: [...regions] };
   let attempts = 0;
   const maxAttempts = 200;
 
@@ -201,7 +201,7 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
  * Check if all regions in a RegionMap are contiguous (all cells of same region are connected)
  */
 export const areRegionsContiguous = (regionMap: RegionMap): boolean => {
-  const { width, height, regions } = regionMap;
+  const { width, regions } = regionMap;
   const size = width; // assuming square grid
 
   // Get all unique region IDs

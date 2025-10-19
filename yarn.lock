@@ -576,7 +576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.38.0":
+"@eslint/js@npm:9.38.0, @eslint/js@npm:^9.38.0":
   version: 9.38.0
   resolution: "@eslint/js@npm:9.38.0"
   checksum: 10c0/b4a0d561ab93f0b1bc6a3f5e3f83764c9cccade59f2c54f1d718c1dcc71ac4d1be97bef7300cca641932d72e7555c79a7bf07e4e4ce1d0a1ddccc84d6440d2a6
@@ -1221,13 +1221,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sovereign/config@workspace:packages/config"
   peerDependencies:
-    "@typescript-eslint/eslint-plugin": ">=6"
-    "@typescript-eslint/parser": ">=6"
-    eslint: ">=8"
+    "@eslint/js": ">=9"
+    "@typescript-eslint/eslint-plugin": ">=8"
+    "@typescript-eslint/parser": ">=8"
+    eslint: ">=9"
     eslint-config-prettier: ">=9"
     eslint-plugin-jsx-a11y: ">=6"
     eslint-plugin-react: ">=7"
-    eslint-plugin-react-hooks: ">=4"
+    eslint-plugin-react-hooks: ">=5"
     prettier: ">=3"
   languageName: unknown
   linkType: soft
@@ -1236,6 +1237,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sovereign/engine@workspace:packages/engine"
   dependencies:
+    eslint: "npm:^9"
     tsup: "npm:^8.3.5"
     typescript: "npm:^5.6.3"
     vitest: "npm:^2.1.4"
@@ -5555,6 +5557,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "sovereign@workspace:."
   dependencies:
+    "@eslint/js": "npm:^9.38.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.8.1"
     "@typescript-eslint/parser": "npm:^8.8.1"
     eslint: "npm:^9.38.0"
