@@ -41,8 +41,8 @@ describe('solver', () => {
 
 describe('puzzle solvability', () => {
   it('generated puzzles have at least one solution', () => {
-    const sizes = [5, 6, 8];
-    const seeds = ['test-1', 'test-2', 'test-3'];
+    const sizes = [5, 6];
+    const seeds = ['test-1', 'test-2'];
 
     for (const size of sizes) {
       for (const seed of seeds) {

@@ -31,11 +31,11 @@ jobs:
       - name: Lint (workspaces)
         run: yarn lint
 
-      - name: Unit tests
-        run: yarn test
-
       - name: Build
         run: yarn build
+
+      - name: Unit tests
+        run: yarn test
 
   e2e:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}

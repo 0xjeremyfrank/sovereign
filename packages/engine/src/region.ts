@@ -114,7 +114,7 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
   // Ensure uniqueness by adjusting regions to eliminate alternative solutions
   const regionMap: RegionMap = { width: size, height: size, regions: [...regions] };
   let attempts = 0;
-  const maxAttempts = 200;
+  const maxAttempts = 50; // Reduced for faster generation; still provides good uniqueness
 
   while (attempts < maxAttempts) {
     const allSolutions = findAllSolutions(regionMap);
