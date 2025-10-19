@@ -27,6 +27,9 @@ pnpm-debug.log*
 .idea/
 .vscode/
 
+# Linting
+.eslintcache
+
 # TypeScript
 *.tsbuildinfo
 

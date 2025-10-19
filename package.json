@@ -1,6 +1,7 @@
 {
   "name": "sovereign",
   "private": true,
+  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*",
