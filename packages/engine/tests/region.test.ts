@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateRegionMap } from '../src/region';
+import { generateRegionMap, areRegionsContiguous } from '../src/region';
 
 describe('region generation', () => {
   it('is deterministic for same seed/size', () => {
@@ -14,5 +14,54 @@ describe('region generation', () => {
     const c = generateRegionMap('seed-1', 7);
     expect(a.regions).not.toEqual(b.regions);
     expect(a.regions).not.toEqual(c.regions);
+  });
+
+  it('generates contiguous regions', () => {
+    const sizes = [3, 5, 6, 8, 10];
+    const seeds = ['test-1', 'test-2', 'test-3'];
+
+    for (const size of sizes) {
+      for (const seed of seeds) {
+        const regionMap = generateRegionMap(seed, size);
+        expect(areRegionsContiguous(regionMap)).toBe(true);
+      }
+    }
+  });
+
+  it('has correct number of regions', () => {
+    const regionMap = generateRegionMap('test', 6);
+    const uniqueRegions = new Set(regionMap.regions);
+    expect(uniqueRegions.size).toBe(6); // One region per row/column
+  });
+});
+
+describe('areRegionsContiguous', () => {
+  it('detects non-contiguous regions', () => {
+    // Create a region map with non-contiguous region 0
+    const nonContiguous = {
+      width: 3,
+      height: 3,
+      regions: [
+        0,
+        1,
+        0, // region 0 is split
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+      ],
+    };
+    expect(areRegionsContiguous(nonContiguous)).toBe(false);
+  });
+
+  it('accepts contiguous regions', () => {
+    const contiguous = {
+      width: 3,
+      height: 3,
+      regions: [0, 0, 1, 0, 1, 1, 2, 2, 2],
+    };
+    expect(areRegionsContiguous(contiguous)).toBe(true);
   });
 });
