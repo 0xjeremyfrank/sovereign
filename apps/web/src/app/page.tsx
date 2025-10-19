@@ -10,7 +10,7 @@ const Home = () => {
   const initial = params.get('state');
   const { board, regionMap, validation, onCycleCell, onClear, onUndo } = useBoard(
     'demo-seed',
-    8,
+    6,
     initial,
   );
   return (

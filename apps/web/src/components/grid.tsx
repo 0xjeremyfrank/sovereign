@@ -93,18 +93,25 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onCycleCel
           const bg = `hsl(${(regionId * 47) % 360} 60% 90%)`;
           const violation = isViolationIdx(idx);
 
-          // Display logic for three states
+          // Display logic for three states - always preserve region color
           let displayText = '';
-          let textColor = 'black';
-          let bgColor = bg;
+          let textColor = '#333';
+          let textShadow = 'none';
+          let fontSize = '16px';
+          let fontWeight = 'normal';
 
           if (cellState === 'marked') {
             displayText = '✕';
             textColor = '#666';
+            fontSize = '18px';
+            fontWeight = 'bold';
           } else if (cellState === 'sovereign') {
             displayText = '●';
-            textColor = 'white';
-            bgColor = '#333';
+            textColor = '#000';
+            fontSize = '20px';
+            fontWeight = 'bold';
+            // Add white shadow/outline for contrast against any background color
+            textShadow = '0 0 3px white, 0 0 3px white, 0 0 3px white';
           }
 
           return (
@@ -125,13 +132,14 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onCycleCel
               style={{
                 width: 32,
                 height: 32,
-                background: bgColor,
+                background: bg, // Always use region color
                 color: textColor,
                 border: violation ? '2px solid red' : '1px solid #ccc',
                 cursor: 'pointer',
                 outlineOffset: 2,
-                fontSize: cellState === 'marked' ? '18px' : '16px',
-                fontWeight: cellState === 'marked' ? 'bold' : 'normal',
+                fontSize,
+                fontWeight,
+                textShadow,
               }}
             >
               {displayText}
