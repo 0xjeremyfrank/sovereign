@@ -1,15 +1,14 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import type { BoardState, RegionMap, ValidationResult } from '@sovereign/engine';
+import type { BoardState, RegionMap, ValidationResult, CellState } from '@sovereign/engine';
 
 interface Props {
   board: BoardState;
   regionMap: RegionMap;
   validation: ValidationResult;
-  onPlace: (row: number, col: number) => void;
-  onRemove: (row: number) => void;
+  onCycleCell: (row: number, col: number) => void;
 }
 
-export const Grid: React.FC<Props> = ({ board, regionMap, validation, onPlace, onRemove }) => {
+export const Grid: React.FC<Props> = ({ board, regionMap, validation, onCycleCell }) => {
   const size = board.size;
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [focusIdx, setFocusIdx] = useState(0);
@@ -63,13 +62,11 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onPlace, o
       }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        const has = board.sovereigns[row] === col;
-        if (has) onRemove(row);
-        else onPlace(row, col);
+        onCycleCell(row, col);
         return;
       }
     },
-    [board.sovereigns, focusIdx, onPlace, onRemove, size, focusCell],
+    [focusIdx, onCycleCell, size, focusCell],
   );
 
   // When the container receives focus, move focus to the current active cell
@@ -91,10 +88,25 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onPlace, o
         {Array.from({ length: size * size }, (_, idx) => {
           const r = Math.floor(idx / size);
           const c = idx % size;
-          const has = board.sovereigns[r] === c;
+          const cellState: CellState = board.cells[idx] ?? 'blank';
           const regionId = regionMap.regions[idx] ?? 0;
           const bg = `hsl(${(regionId * 47) % 360} 60% 90%)`;
           const violation = isViolationIdx(idx);
+
+          // Display logic for three states
+          let displayText = '';
+          let textColor = 'black';
+          let bgColor = bg;
+
+          if (cellState === 'marked') {
+            displayText = '✕';
+            textColor = '#666';
+          } else if (cellState === 'sovereign') {
+            displayText = '●';
+            textColor = 'white';
+            bgColor = '#333';
+          }
+
           return (
             <button
               key={idx}
@@ -105,22 +117,24 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onPlace, o
               role="gridcell"
               aria-rowindex={r + 1}
               aria-colindex={c + 1}
-              aria-selected={has}
+              aria-selected={cellState === 'sovereign'}
               aria-invalid={violation || undefined}
-              aria-label={`row ${r + 1} column ${c + 1}${has ? ' has piece' : ''}${violation ? ' violating' : ''}`}
+              aria-label={`row ${r + 1} column ${c + 1}${cellState === 'sovereign' ? ' has sovereign' : cellState === 'marked' ? ' marked' : ''}${violation ? ' violating' : ''}`}
               tabIndex={focusIdx === idx ? 0 : -1}
-              onClick={() => (has ? onRemove(r) : onPlace(r, c))}
+              onClick={() => onCycleCell(r, c)}
               style={{
                 width: 32,
                 height: 32,
-                background: has ? '#333' : bg,
-                color: has ? 'white' : 'black',
+                background: bgColor,
+                color: textColor,
                 border: violation ? '2px solid red' : '1px solid #ccc',
                 cursor: 'pointer',
                 outlineOffset: 2,
+                fontSize: cellState === 'marked' ? '18px' : '16px',
+                fontWeight: cellState === 'marked' ? 'bold' : 'normal',
               }}
             >
-              {has ? '●' : ''}
+              {displayText}
             </button>
           );
         })}

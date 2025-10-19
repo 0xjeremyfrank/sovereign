@@ -2,8 +2,9 @@ import { useMemo, useState, useCallback } from 'react';
 import {
   createEmptyBoard,
   generateRegionMap,
-  placeSovereign,
-  removeSovereign,
+  cycleCellState,
+  clearBoard,
+  undoMove,
   validateBoard,
   decodeBoard,
   type BoardState,
@@ -28,13 +29,17 @@ export const useBoard = (seed: string, size: number, initialEncoded?: string | n
     [board, regionMap],
   );
 
-  const onPlace = useCallback((row: number, col: number) => {
-    setBoard((b) => placeSovereign(b, row, col));
+  const onCycleCell = useCallback((row: number, col: number) => {
+    setBoard((b) => cycleCellState(b, row, col));
   }, []);
 
-  const onRemove = useCallback((row: number) => {
-    setBoard((b) => removeSovereign(b, row));
+  const onClear = useCallback(() => {
+    setBoard((b) => clearBoard(b));
   }, []);
 
-  return { board, regionMap, validation, onPlace, onRemove };
+  const onUndo = useCallback(() => {
+    setBoard((b) => undoMove(b));
+  }, []);
+
+  return { board, regionMap, validation, onCycleCell, onClear, onUndo };
 };
