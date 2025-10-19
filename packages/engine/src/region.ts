@@ -1,4 +1,5 @@
 import { createRng } from './prng';
+import { findValidSolution } from './solver';
 import type { RegionMap } from './types';
 
 const linear = (row: number, col: number, size: number): number => row * size + col;
@@ -18,6 +19,9 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
   const rng = createRng(seed + ':' + size);
   const numRegions = size; // One region per row/column (standard n-Queens style)
   const totalCells = size * size;
+
+  // Find a valid solution first to guarantee solvability
+  const solution = findValidSolution(seed, size);
 
   const regions: number[] = new Array(totalCells).fill(-1);
   const targetSizePerRegion = Math.floor(totalCells / numRegions);
@@ -46,23 +50,28 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
     return neighbors;
   };
 
+  // Pre-assign all solution cells to their respective regions
+  const solutionCells = new Set<number>();
+  for (let regionId = 0; regionId < numRegions; regionId++) {
+    const row = regionId;
+    const col = solution[regionId]!;
+    const idx = linear(row, col, size);
+    regions[idx] = regionId;
+    solutionCells.add(idx);
+  }
+
   // Grow regions using flood-fill to ensure contiguity
+  // Start each region from its solution cell
   for (let regionId = 0; regionId < numRegions; regionId++) {
     const regionSize =
       regionId < numRegions - 1 ? targetSizePerRegion : totalCells - regionId * targetSizePerRegion;
 
-    // Find unassigned cells
-    const unassigned = regions
-      .map((val, idx) => (val === -1 ? idx : -1))
-      .filter((idx) => idx !== -1);
+    const row = regionId;
+    const col = solution[regionId]!;
+    const startIdx = linear(row, col, size);
 
-    if (unassigned.length === 0) break;
-
-    // Pick random starting cell
-    const startIdx = unassigned[Math.floor(rng() * unassigned.length)]!;
     const frontier: number[] = [startIdx];
     const inRegion: Set<number> = new Set([startIdx]);
-    regions[startIdx] = regionId;
 
     // Grow region using BFS with randomization
     while (inRegion.size < regionSize && frontier.length > 0) {
@@ -71,9 +80,9 @@ export const generateRegionMap = (seed: string, size: number): RegionMap => {
       const currentIdx = frontier[frontierIdx]!;
       frontier.splice(frontierIdx, 1);
 
-      // Get unassigned neighbors
+      // Get unassigned neighbors (excluding other solution cells)
       const neighbors = shuffle(
-        getNeighbors(currentIdx).filter((n) => regions[n] === -1),
+        getNeighbors(currentIdx).filter((n) => regions[n] === -1 && !solutionCells.has(n)),
         rng,
       );
 
