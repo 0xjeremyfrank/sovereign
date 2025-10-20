@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findValidSolution } from '../src/solver';
+import { findValidSolution, hasAtMostSolutions, findAllSolutions } from '../src/solver';
 import { generateRegionMap } from '../src/region';
 import { validateBoard, createEmptyBoard, placeSovereign } from '../src';
 
@@ -36,6 +36,66 @@ describe('solver', () => {
     const a = findValidSolution('seed-1', 6);
     const b = findValidSolution('seed-1', 6);
     expect(a).toEqual(b);
+  });
+});
+
+describe('hasAtMostSolutions', () => {
+  it('should return true when solution count is under cap', () => {
+    const regionMap = generateRegionMap('test-seed', 5);
+    const result = hasAtMostSolutions(regionMap, 10);
+    expect(result).toBe(true);
+  });
+
+  it('should return false when solution count exceeds cap', () => {
+    // Create a region map that has multiple solutions
+    const regionMap = generateRegionMap('test-seed', 6);
+    const result = hasAtMostSolutions(regionMap, 1);
+    expect(result).toBe(false);
+  });
+
+  it('should work correctly for uniqueness check (cap = 1)', () => {
+    // Test with a region map that has exactly 1 solution
+    const regionMap = generateRegionMap('test-seed', 5);
+    const result = hasAtMostSolutions(regionMap, 1);
+    expect(result).toBe(true);
+
+    // Test with a region map that has multiple solutions
+    const regionMap2 = generateRegionMap('test-seed', 6);
+    const result2 = hasAtMostSolutions(regionMap2, 1);
+    expect(result2).toBe(false);
+  });
+
+  it('should match findAllSolutions.length when cap is high', () => {
+    const regionMap = generateRegionMap('test-seed', 5);
+    const allSolutions = findAllSolutions(regionMap);
+    const actualCount = allSolutions.length;
+
+    // Test with cap just above actual count
+    expect(hasAtMostSolutions(regionMap, actualCount)).toBe(true);
+    expect(hasAtMostSolutions(regionMap, actualCount - 1)).toBe(false);
+  });
+
+  it('should exit early when count exceeds cap', () => {
+    const regionMap = generateRegionMap('test-seed', 6);
+
+    // This should return false because the region map has more than 3 solutions
+    const result = hasAtMostSolutions(regionMap, 3);
+    expect(result).toBe(false);
+
+    // Verify it actually has more than 3 solutions
+    const allSolutions = findAllSolutions(regionMap);
+    expect(allSolutions.length).toBeGreaterThan(3);
+  });
+
+  it('should handle edge cases', () => {
+    // Test with cap of 0 (should return false unless no solutions)
+    const regionMap = generateRegionMap('test-seed', 5);
+    const result = hasAtMostSolutions(regionMap, 0);
+    expect(result).toBe(false);
+
+    // Test with very high cap
+    const result2 = hasAtMostSolutions(regionMap, 1000);
+    expect(result2).toBe(true);
   });
 });
 

@@ -78,6 +78,78 @@ export const findValidSolution = (seed: string, size: number): number[] => {
 };
 
 /**
+ * Check if a region map has at most the specified number of solutions
+ * Returns true if solution count <= cap, false if count > cap
+ * Uses early exit for performance optimization
+ * For puzzle generation, typically use cap = 1 to ensure uniqueness
+ */
+export const hasAtMostSolutions = (regionMap: RegionMap, cap: number): boolean => {
+  const size = regionMap.width;
+  let count = 0;
+  const currentSolution: number[] = [];
+  const usedCols = new Set<number>();
+
+  const linear = (row: number, col: number): number => row * size + col;
+
+  const isValidPlacement = (row: number, col: number): boolean => {
+    // Check column
+    if (usedCols.has(col)) return false;
+
+    // Check adjacency with previously placed sovereigns
+    for (let r = 0; r < row; r++) {
+      const c = currentSolution[r]!;
+      const rowDiff = Math.abs(row - r);
+      const colDiff = Math.abs(col - c);
+
+      // Must not be adjacent (including diagonals)
+      if (rowDiff <= 1 && colDiff <= 1) {
+        return false;
+      }
+    }
+
+    // Check region constraint
+    const currentRegion = regionMap.regions[linear(row, col)]!;
+    for (let r = 0; r < row; r++) {
+      const c = currentSolution[r]!;
+      const otherRegion = regionMap.regions[linear(r, c)]!;
+      if (currentRegion === otherRegion) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const backtrack = (row: number): boolean => {
+    // Early exit if we've exceeded the cap
+    if (count > cap) return false;
+
+    if (row === size) {
+      count++;
+      return count <= cap;
+    }
+
+    for (let col = 0; col < size; col++) {
+      if (isValidPlacement(row, col)) {
+        currentSolution[row] = col;
+        usedCols.add(col);
+
+        if (!backtrack(row + 1)) {
+          return false;
+        }
+
+        currentSolution.pop();
+        usedCols.delete(col);
+      }
+    }
+
+    return true;
+  };
+
+  return backtrack(0);
+};
+
+/**
  * Find all valid solutions for a given region map
  * Used to verify puzzle uniqueness
  */
@@ -143,8 +215,8 @@ export const findAllSolutions = (regionMap: RegionMap): number[][] => {
 
 /**
  * Check if a region map has exactly one solution
+ * Uses hasAtMostSolutions for better performance
  */
 export const hasUniqueSolution = (regionMap: RegionMap): boolean => {
-  const solutions = findAllSolutions(regionMap);
-  return solutions.length === 1;
+  return hasAtMostSolutions(regionMap, 1);
 };

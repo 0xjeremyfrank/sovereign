@@ -1,5 +1,5 @@
 import { createRng } from './prng';
-import { findValidSolution, findAllSolutions } from './solver';
+import { findValidSolution, findAllSolutions, hasAtMostSolutions } from './solver';
 import type { RegionMap } from './types';
 
 const linear = (row: number, col: number, size: number): number => row * size + col;
@@ -15,6 +15,158 @@ const shuffle = <T>(arr: T[], rng: () => number): T[] => {
   return result;
 };
 
+/**
+ * Generate region map with constraint-aware growth that ensures uniqueness
+ * Checks uniqueness during region growth to avoid expensive post-processing
+ */
+export const generateRegionMapWithConstraints = (seed: string, size: number): RegionMap => {
+  const rng = createRng(seed + ':' + size);
+  const numRegions = size;
+  const totalCells = size * size;
+
+  // Find a valid solution first to guarantee solvability
+  const solution = findValidSolution(seed, size);
+
+  const regions: number[] = new Array(totalCells).fill(-1);
+  const targetSizePerRegion = Math.floor(totalCells / numRegions);
+
+  // Directions for adjacency (4-connected: up, right, down, left)
+  const dirs: Array<[number, number]> = [
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+    [0, -1],
+  ];
+
+  const getNeighbors = (idx: number): number[] => {
+    const row = Math.floor(idx / size);
+    const col = idx % size;
+    const neighbors: number[] = [];
+
+    for (const [dr, dc] of dirs) {
+      const nr = row + dr;
+      const nc = col + dc;
+      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+        neighbors.push(linear(nr, nc, size));
+      }
+    }
+
+    return neighbors;
+  };
+
+  // Pre-assign all solution cells to their respective regions
+  const solutionCells = new Set<number>();
+  for (let regionId = 0; regionId < numRegions; regionId++) {
+    const row = regionId;
+    const col = solution[regionId]!;
+    const idx = linear(row, col, size);
+    regions[idx] = regionId;
+    solutionCells.add(idx);
+  }
+
+  // Helper function to check if adding a cell maintains uniqueness
+  const wouldMaintainUniqueness = (cellIdx: number, regionId: number): boolean => {
+    // Temporarily assign the cell
+    const originalValue = regions[cellIdx] ?? -1;
+    regions[cellIdx] = regionId;
+
+    // Create temporary region map for uniqueness check
+    const tempRegionMap: RegionMap = { width: size, height: size, regions: [...regions] };
+
+    // Check if this assignment maintains uniqueness
+    const isUnique = hasAtMostSolutions(tempRegionMap, 1);
+
+    // Restore original value
+    regions[cellIdx] = originalValue;
+
+    return isUnique;
+  };
+
+  // Grow regions using constraint-aware flood-fill
+  for (let regionId = 0; regionId < numRegions; regionId++) {
+    const regionSize =
+      regionId < numRegions - 1 ? targetSizePerRegion : totalCells - regionId * targetSizePerRegion;
+
+    const row = regionId;
+    const col = solution[regionId]!;
+    const startIdx = linear(row, col, size);
+
+    const frontier: number[] = [startIdx];
+    const inRegion: Set<number> = new Set([startIdx]);
+
+    // Grow region using BFS with constraint checking
+    while (inRegion.size < regionSize && frontier.length > 0) {
+      // Pick random cell from frontier
+      const frontierIdx = Math.floor(rng() * frontier.length);
+      const currentIdx = frontier[frontierIdx]!;
+      frontier.splice(frontierIdx, 1);
+
+      // Get unassigned neighbors (excluding other solution cells)
+      const neighbors = shuffle(
+        getNeighbors(currentIdx).filter((n) => regions[n] === -1 && !solutionCells.has(n)),
+        rng,
+      );
+
+      // Try to add neighbors, checking uniqueness constraint
+      for (const neighbor of neighbors) {
+        if (inRegion.size >= regionSize) break;
+
+        if (!inRegion.has(neighbor)) {
+          // Check if adding this cell would maintain uniqueness
+          if (wouldMaintainUniqueness(neighbor, regionId)) {
+            regions[neighbor] = regionId;
+            inRegion.add(neighbor);
+            frontier.push(neighbor);
+          }
+          // If not unique, skip this cell and try next neighbor
+        }
+      }
+    }
+  }
+
+  // Fill any remaining unassigned cells with adjacent regions
+  for (let idx = 0; idx < totalCells; idx++) {
+    if (regions[idx] === -1) {
+      const neighbors = getNeighbors(idx);
+      const assignedNeighbor = neighbors.find((n) => regions[n] !== -1);
+      if (assignedNeighbor !== undefined) {
+        regions[idx] = regions[assignedNeighbor]!;
+      } else {
+        regions[idx] = 0;
+      }
+    }
+  }
+
+  // Final uniqueness check
+  const regionMap: RegionMap = { width: size, height: size, regions: [...regions] };
+
+  if (!hasAtMostSolutions(regionMap, 1)) {
+    // If constraint-aware growth failed, fall back to original method with uniqueness enforcement
+    console.warn(
+      'Constraint-aware growth failed to achieve uniqueness, falling back to original method',
+    );
+    const fallbackMap = generateRegionMap(seed, size);
+
+    // If fallback also fails uniqueness, try a few more seeds
+    if (!hasAtMostSolutions(fallbackMap, 1)) {
+      for (let i = 1; i <= 5; i++) {
+        const altSeed = `${seed}-fallback-${i}`;
+        const altMap = generateRegionMap(altSeed, size);
+        if (hasAtMostSolutions(altMap, 1)) {
+          return altMap;
+        }
+      }
+    }
+
+    return fallbackMap;
+  }
+
+  return regionMap;
+};
+
+/**
+ * Original region generation method (kept for fallback and comparison)
+ */
 export const generateRegionMap = (seed: string, size: number): RegionMap => {
   const rng = createRng(seed + ':' + size);
   const numRegions = size; // One region per row/column (standard n-Queens style)
