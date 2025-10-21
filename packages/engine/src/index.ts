@@ -5,3 +5,4 @@ export * from './solver';
 export * from './board';
 export * from './encode';
 export * from './validate';
+export * from './logic-solver';
