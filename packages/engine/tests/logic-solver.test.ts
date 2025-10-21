@@ -103,3 +103,9 @@ describe('logic solver - basic behavior', () => {
     expect(duration).toBeLessThan(15);
   });
 });
+
+// Phase 3: Heuristic-Based Region Growth - SKIPPED
+// Testing revealed that aggressive shape heuristics (narrow regions, chokepoints)
+// made uniqueness harder to achieve (12% vs 56% baseline for 5x5).
+// See .product/phase3-findings.md for detailed analysis.
+// Proceeding directly to Phase 4: Hill-Climbing Optimization.
