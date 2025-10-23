@@ -6,3 +6,4 @@ export * from './board';
 export * from './encode';
 export * from './validate';
 export * from './logic-solver';
+export * from './optimizer';
