@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import {
   createEmptyBoard,
-  generateRegionMap,
+  generateLogicSolvablePuzzle,
   cycleCellState,
   clearBoard,
   undoMove,
@@ -13,7 +13,8 @@ import {
 } from '@sovereign/engine';
 
 export const useBoard = (seed: string, size: number, initialEncoded?: string | null) => {
-  const regionMap: RegionMap = useMemo(() => generateRegionMap(seed, size), [seed, size]);
+  // Use optimized logic-solvable puzzle generation
+  const regionMap: RegionMap = useMemo(() => generateLogicSolvablePuzzle(seed, size), [seed, size]);
   const [board, setBoard] = useState<BoardState>(() => {
     if (initialEncoded) {
       try {
