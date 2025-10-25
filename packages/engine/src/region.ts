@@ -142,9 +142,6 @@ export const generateRegionMapWithConstraints = (seed: string, size: number): Re
 
   if (!hasAtMostSolutions(regionMap, 1)) {
     // If constraint-aware growth failed, fall back to original method with uniqueness enforcement
-    console.warn(
-      'Constraint-aware growth failed to achieve uniqueness, falling back to original method',
-    );
     const fallbackMap = generateRegionMap(seed, size);
 
     // If fallback also fails uniqueness, try a few more seeds

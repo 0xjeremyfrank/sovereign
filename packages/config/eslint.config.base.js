@@ -59,6 +59,7 @@ export const baseConfig = [
         beforeAll: 'readonly',
         afterAll: 'readonly',
         vi: 'readonly',
+        performance: 'readonly',
       },
     },
     plugins: {

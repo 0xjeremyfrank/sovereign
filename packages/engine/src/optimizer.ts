@@ -105,11 +105,11 @@ export const optimizeForLogicSolvability = (
 ): RegionMap => {
   let current = regionMap;
   let currentSolvable = isLogicSolvable(current);
-  let iterations = 0;
-  let acceptedSwaps = 0;
+  let _iterations = 0;
+  let _acceptedSwaps = 0;
 
   for (let i = 0; i < maxIterations; i++) {
-    iterations++;
+    _iterations++;
 
     // Try a boundary swap
     const candidate = tryRandomBoundarySwap(current, rng);
@@ -126,11 +126,11 @@ export const optimizeForLogicSolvability = (
     if (candidateSolvable && !currentSolvable) {
       current = candidate;
       currentSolvable = true;
-      acceptedSwaps++;
+      _acceptedSwaps++;
     } else if (candidateSolvable && currentSolvable && rng() < 0.1) {
       // Simulated annealing: explore even when already good (10% chance)
       current = candidate;
-      acceptedSwaps++;
+      _acceptedSwaps++;
     }
 
     // Early exit if logic-solvable (but keep exploring a bit for better shapes)
@@ -220,7 +220,6 @@ export const generateLogicSolvablePuzzle = (
 
     // Verify it's unique before optimizing
     if (!hasAtMostSolutions(baseMap, 1)) {
-      console.warn('ensureUniquePuzzle returned non-unique puzzle');
       continue;
     }
 
@@ -229,7 +228,6 @@ export const generateLogicSolvablePuzzle = (
 
     // Double-check constraints weren't broken
     if (!hasAtMostSolutions(optimized, 1) || !areRegionsContiguous(optimized)) {
-      console.warn('Optimization broke constraints, skipping');
       continue;
     }
 

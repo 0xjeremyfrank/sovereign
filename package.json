@@ -12,6 +12,7 @@
     "node": ">=18.18.0"
   },
   "scripts": {
+    "dev": "yarn workspace web dev",
     "build": "yarn workspaces foreach -pt -A run build",
     "test": "yarn workspaces foreach -pt -A run test",
     "lint": "yarn workspaces foreach -pt -A run lint",
