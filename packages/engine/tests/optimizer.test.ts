@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { performance } from 'perf_hooks';
 import { createRng } from '../src/prng';
-import {
-  generateRegionMap,
-  generateRegionMapWithConstraints,
-  areRegionsContiguous,
-} from '../src/region';
+import { generateRegionMapWithConstraints, areRegionsContiguous } from '../src/region';
 import { hasAtMostSolutions } from '../src/solver';
 import { isLogicSolvable } from '../src/logic-solver';
 import { optimizeForLogicSolvability, generateLogicSolvablePuzzle } from '../src/optimizer';

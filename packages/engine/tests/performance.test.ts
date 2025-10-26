@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
 import { performance } from 'perf_hooks';
 import { generateLogicSolvablePuzzle } from '../src/optimizer';
-import { hasAtMostSolutions, findAllSolutions } from '../src/solver';
+import { hasAtMostSolutions } from '../src/solver';
 import { areRegionsContiguous } from '../src/region';
 import { isLogicSolvable } from '../src/logic-solver';
 
