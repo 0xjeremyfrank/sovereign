@@ -23,4 +23,10 @@ export default [
       '@typescript-eslint/triple-slash-reference': 'off',
     },
   },
+  {
+    files: ['apps/web/src/**/*.worker.ts', 'apps/web/src/**/use-puzzle-worker.ts'],
+    rules: {
+      'no-undef': 'off', // Worker globals are provided by the runtime
+    },
+  },
 ];

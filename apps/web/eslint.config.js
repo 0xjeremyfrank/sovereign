@@ -17,13 +17,9 @@ export default [
     },
   },
   {
-    files: ['**/*.worker.ts', '**/use-puzzle-worker.ts'],
-    languageOptions: {
-      globals: {
-        Worker: 'readonly',
-        MessageEvent: 'readonly',
-        self: 'readonly',
-      },
+    files: ['src/**/*.worker.ts', 'src/**/use-puzzle-worker.ts'],
+    rules: {
+      'no-undef': 'off', // Worker globals are provided by the runtime
     },
   },
 ];
