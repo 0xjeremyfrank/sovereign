@@ -24,14 +24,6 @@ const ensureUniqueBaseline = (seed: string, size: number): RegionMap | null => {
     }
   }
 
-  // Fallback to basic generation
-  for (let attempt = 0; attempt < 20; attempt++) {
-    const map = generateRegionMap(`${seed}-fallback-${attempt}`, size);
-    if (hasAtMostSolutions(map, 1)) {
-      return map;
-    }
-  }
-
   return null;
 };
 
@@ -235,7 +227,10 @@ describe('Phase 4: Hill-Climbing Optimization', () => {
 
   it('maintains reasonable performance', () => {
     const seed = 'performance-test';
-    const baseline = generateRegionMap(seed, 6);
+    const baseline = ensureUniqueBaseline(seed, 6);
+    if (!baseline) {
+      throw new Error('Could not generate unique baseline');
+    }
     const rng = createRng(seed + ':opt');
 
     const start = performance.now();

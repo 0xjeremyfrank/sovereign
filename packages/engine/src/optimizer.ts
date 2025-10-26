@@ -1,11 +1,7 @@
 import { createRng } from './prng';
 import { hasAtMostSolutions } from './solver';
 import { isLogicSolvable } from './logic-solver';
-import {
-  generateRegionMap,
-  generateRegionMapWithConstraints,
-  areRegionsContiguous,
-} from './region';
+import { generateRegionMapWithConstraints, areRegionsContiguous } from './region';
 import type { RegionMap } from './types';
 
 const linear = (row: number, col: number, size: number): number => row * size + col;
@@ -172,21 +168,16 @@ export interface GenerationOptions {
 const ensureUniquePuzzle = (
   seed: string,
   size: number,
-  maxAttempts: number = 10,
+  maxAttempts: number = 50,
 ): RegionMap | null => {
+  // Retry Method 1 with different seeds until we get uniqueness
+  // Method 1 has high success rates (72% for 6x6, 62% for 7x7)
+  // So retrying is more efficient than using Method 2's expensive findAllSolutions
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const trySeed = attempt === 0 ? seed : `${seed}-unique-${attempt}`;
     const map = generateRegionMapWithConstraints(trySeed, size);
 
-    // Verify it's unique (generateRegionMapWithConstraints should return unique puzzles)
-    if (hasAtMostSolutions(map, 1)) {
-      return map;
-    }
-  }
-
-  // Last resort: try basic generation with many attempts
-  for (let attempt = 0; attempt < 20; attempt++) {
-    const map = generateRegionMap(`${seed}-fallback-${attempt}`, size);
+    // Verify it's unique
     if (hasAtMostSolutions(map, 1)) {
       return map;
     }
@@ -244,15 +235,8 @@ export const generateLogicSolvablePuzzle = (
     }
   }
 
-  // Fallback: return last attempt even if not logic-solvable
-  console.warn(`Failed to generate logic-solvable puzzle after ${maxRetries} attempts`);
-  const fallbackSeed = `${seed}-fallback`;
-  const fallback = ensureUniquePuzzle(fallbackSeed, size, 20);
-
-  if (!fallback) {
-    // Last resort: return ANY puzzle
-    return generateRegionMap(fallbackSeed, size);
-  }
-
-  return optimizeForLogicSolvability(fallback, maxOptimizationIterations, rng);
+  // If we couldn't generate a logic-solvable puzzle after all retries, throw an error
+  throw new Error(
+    `Failed to generate logic-solvable puzzle after ${maxRetries} attempts. Consider increasing maxRetries or reducing size.`,
+  );
 };

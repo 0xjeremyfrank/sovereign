@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateRegionMap, findValidSolution, findAllSolutions } from '../src';
+import { generateRegionMapWithConstraints, findValidSolution, findAllSolutions } from '../src';
 
 describe('solution uniqueness', () => {
   it('generates puzzles with very few solutions (ideally 1, max 3)', () => {
@@ -10,7 +10,7 @@ describe('solution uniqueness', () => {
 
     for (const size of sizes) {
       for (const seed of seeds) {
-        const regionMap = generateRegionMap(seed, size);
+        const regionMap = generateRegionMapWithConstraints(seed, size);
         const solutions = findAllSolutions(regionMap);
 
         console.log(`Puzzle ${seed} (${size}x${size}): ${solutions.length} solution(s)`);
@@ -34,7 +34,7 @@ describe('solution uniqueness', () => {
     const size = 5;
 
     const intendedSolution = findValidSolution(seed, size);
-    const regionMap = generateRegionMap(seed, size);
+    const regionMap = generateRegionMapWithConstraints(seed, size);
     const allSolutions = findAllSolutions(regionMap);
 
     expect(allSolutions.length).toBeGreaterThan(0);
@@ -53,7 +53,7 @@ describe('solution uniqueness', () => {
 
     for (const size of sizes) {
       for (const seed of seeds) {
-        const regionMap = generateRegionMap(seed, size);
+        const regionMap = generateRegionMapWithConstraints(seed, size);
         const solutions = findAllSolutions(regionMap);
 
         console.log(`Puzzle ${seed} (${size}x${size}): ${solutions.length} solution(s)`);
