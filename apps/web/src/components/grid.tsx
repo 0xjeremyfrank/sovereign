@@ -3,7 +3,7 @@ import type { BoardState, RegionMap, ValidationResult, CellState } from '@sovere
 
 interface Props {
   board: BoardState;
-  regionMap: RegionMap;
+  regionMap: RegionMap | null;
   validation: ValidationResult;
   onCycleCell: (row: number, col: number) => void;
 }
@@ -73,6 +73,11 @@ export const Grid: React.FC<Props> = ({ board, regionMap, validation, onCycleCel
   const onContainerFocus = useCallback(() => {
     focusCell(focusIdx);
   }, [focusCell, focusIdx]);
+
+  // Early return after all hooks
+  if (!regionMap) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>

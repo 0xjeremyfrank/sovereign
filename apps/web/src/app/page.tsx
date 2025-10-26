@@ -18,7 +18,7 @@ const Home = () => {
     setSeed(`seed-${Math.random().toString(36).substring(2, 9)}`);
   }, []);
 
-  const { board, regionMap, validation, onCycleCell, onClear, onUndo } = useBoard(
+  const { board, regionMap, validation, isGenerating, onCycleCell, onClear, onUndo } = useBoard(
     seed,
     size,
     initial,
@@ -44,7 +44,16 @@ const Home = () => {
         size={size}
         onSizeChange={handleSizeChange}
       />
-      <Grid board={board} regionMap={regionMap} validation={validation} onCycleCell={onCycleCell} />
+      {isGenerating || !regionMap ? (
+        <div style={{ padding: 20, textAlign: 'center' }}>Generating puzzle...</div>
+      ) : (
+        <Grid
+          board={board}
+          regionMap={regionMap}
+          validation={validation}
+          onCycleCell={onCycleCell}
+        />
+      )}
     </main>
   );
 };

@@ -4,6 +4,24 @@ import { isLogicSolvable } from './logic-solver';
 import { generateRegionMapWithConstraints, areRegionsContiguous } from './region';
 import type { RegionMap } from './types';
 
+// Cross-platform performance API
+interface PerformanceLike {
+  now(): number;
+}
+
+const getPerformance = (): PerformanceLike => {
+  // Check globalThis first (works in Web Workers, browsers, and Node 12+)
+  if (typeof globalThis !== 'undefined' && 'performance' in globalThis) {
+    return (globalThis as { performance: PerformanceLike }).performance;
+  }
+  // Fallback for environments without performance API
+  return {
+    now: () => Date.now(),
+  };
+};
+
+const performance = getPerformance();
+
 const linear = (row: number, col: number, size: number): number => row * size + col;
 
 const getNeighbors = (idx: number, size: number): number[] => {
@@ -198,44 +216,75 @@ export const generateLogicSolvablePuzzle = (
   } = options;
 
   const rng = createRng(seed + ':optimization');
+  const startTime = performance.now();
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const attemptStart = performance.now();
+
     // Generate base puzzle that's ACTUALLY unique
     const baseSeed = attempt === 0 ? seed : `${seed}-retry-${attempt}`;
     const baseMap = ensureUniquePuzzle(baseSeed, size, 20);
 
-    if (!baseMap) {
-      // Couldn't generate unique puzzle, try next attempt
+    if (!baseMap || !hasAtMostSolutions(baseMap, 1)) {
+      if (attempt % 10 === 0) {
+        console.log(
+          `[Engine] Attempt ${attempt + 1}/${maxRetries}: Failed to generate unique puzzle`,
+        );
+      }
       continue;
     }
 
-    // Verify it's unique before optimizing
-    if (!hasAtMostSolutions(baseMap, 1)) {
-      continue;
+    const uniqueTime = performance.now() - attemptStart;
+    if (attempt === 0) {
+      console.log(`[Engine] Unique puzzle generated in ${uniqueTime.toFixed(2)}ms`);
     }
 
     // Optimize for logic-solvability
+    const optStart = performance.now();
     const optimized = optimizeForLogicSolvability(baseMap, maxOptimizationIterations, rng);
+    const optTime = performance.now() - optStart;
 
     // Double-check constraints weren't broken
     if (!hasAtMostSolutions(optimized, 1) || !areRegionsContiguous(optimized)) {
+      if (attempt % 10 === 0) {
+        console.log(
+          `[Engine] Attempt ${attempt + 1}/${maxRetries}: Constraints broken during optimization`,
+        );
+      }
       continue;
     }
 
     // Check if it meets requirements
     if (requireLogicSolvable) {
-      if (isLogicSolvable(optimized)) {
+      const solvable = isLogicSolvable(optimized);
+      if (solvable) {
+        const totalTime = performance.now() - startTime;
+        console.log(
+          `[Engine] Logic-solvable puzzle generated in ${totalTime.toFixed(2)}ms after ${attempt + 1} attempt(s)`,
+        );
+        console.log(`[Engine] Optimization time: ${optTime.toFixed(2)}ms`);
         return optimized;
       }
       // Try again with new seed
+      if (attempt % 10 === 0) {
+        console.log(
+          `[Engine] Attempt ${attempt + 1}/${maxRetries}: Not logic-solvable, retrying...`,
+        );
+      }
       continue;
     } else {
       // Return best effort even if not logic-solvable
+      const totalTime = performance.now() - startTime;
+      console.log(
+        `[Engine] Puzzle generated in ${totalTime.toFixed(2)}ms after ${attempt + 1} attempt(s) (may not be logic-solvable)`,
+      );
       return optimized;
     }
   }
 
   // If we couldn't generate a logic-solvable puzzle after all retries, throw an error
+  const totalTime = performance.now() - startTime;
+  console.error(`[Engine] Failed after ${maxRetries} attempts in ${totalTime.toFixed(2)}ms`);
   throw new Error(
     `Failed to generate logic-solvable puzzle after ${maxRetries} attempts. Consider increasing maxRetries or reducing size.`,
   );

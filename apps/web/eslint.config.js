@@ -16,4 +16,14 @@ export default [
       '@typescript-eslint/triple-slash-reference': 'off',
     },
   },
+  {
+    files: ['**/*.worker.ts', '**/use-puzzle-worker.ts'],
+    languageOptions: {
+      globals: {
+        Worker: 'readonly',
+        MessageEvent: 'readonly',
+        self: 'readonly',
+      },
+    },
+  },
 ];
