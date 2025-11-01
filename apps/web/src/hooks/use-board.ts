@@ -52,6 +52,7 @@ export const useBoard = (seed: string, size: number, initialEncoded?: string | n
     setRegionMap(null);
 
     // Generate puzzle using Web Worker
+    console.log('[useBoard] Triggering puzzle generation', { seed, size, generationOptions });
     generatePuzzle(seed, size, generationOptions);
   }, [seed, size, generationOptions, generatePuzzle]);
 

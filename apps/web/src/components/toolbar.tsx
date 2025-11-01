@@ -1,6 +1,5 @@
 import React from 'react';
 import type { BoardState } from '@sovereign/engine';
-import { useShare } from '../hooks/use-share';
 
 interface Props {
   board: BoardState;
@@ -19,7 +18,6 @@ export const Toolbar: React.FC<Props> = ({
   size,
   onSizeChange,
 }) => {
-  const { url, copy, copied } = useShare(board);
   const canUndo = board.history.length > 0;
 
   return (
@@ -50,9 +48,6 @@ export const Toolbar: React.FC<Props> = ({
       <button onClick={onUndo} disabled={!canUndo} aria-label="Undo last move">
         Undo
       </button>
-      <button onClick={copy}>Share</button>
-      <input readOnly value={url} style={{ flex: 1, minWidth: 200 }} aria-label="Share URL" />
-      {copied ? <span aria-live="polite">Copied!</span> : null}
     </div>
   );
 };
