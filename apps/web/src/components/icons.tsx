@@ -1,13 +1,11 @@
+import React from 'react';
+
 const classNames = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(' ');
 
 export const IconCrown = ({ className }: { className?: string }) => {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      className={classNames('w-4 h-4', className)}
-    >
+    <svg viewBox="0 0 24 24" aria-hidden className={classNames('w-4 h-4', className)}>
       <path d="M3 7l4 3 5-6 5 6 4-3-2 10H5L3 7z" fill="currentColor" />
     </svg>
   );
@@ -23,4 +21,3 @@ export const IconUndo = ({ className }: { className?: string }) => {
     </svg>
   );
 };
-
