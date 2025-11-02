@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   createEmptyBoard,
   cycleCellState,
+  markCell,
   clearBoard,
   undoMove,
   validateBoard,
@@ -82,6 +83,10 @@ export const useBoard = (seed: string, size: number, initialEncoded?: string | n
     setBoard((b: BoardState) => cycleCellState(b, row, col));
   }, []);
 
+  const onMarkCell = useCallback((row: number, col: number) => {
+    setBoard((b: BoardState) => markCell(b, row, col));
+  }, []);
+
   const onClear = useCallback(() => {
     setBoard((b: BoardState) => clearBoard(b));
   }, []);
@@ -90,5 +95,5 @@ export const useBoard = (seed: string, size: number, initialEncoded?: string | n
     setBoard((b: BoardState) => undoMove(b));
   }, []);
 
-  return { board, regionMap, validation, isGenerating, onCycleCell, onClear, onUndo };
+  return { board, regionMap, validation, isGenerating, onCycleCell, onMarkCell, onClear, onUndo };
 };

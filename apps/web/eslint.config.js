@@ -5,6 +5,12 @@ export default [
   ...baseConfig,
   {
     files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      globals: {
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+      },
+    },
     rules: {
       // Web app specific overrides
     },

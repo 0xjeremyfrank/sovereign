@@ -20,11 +20,8 @@ const Home = () => {
     setSeed(`seed-${Math.random().toString(36).substring(2, 9)}`);
   }, []);
 
-  const { board, regionMap, validation, isGenerating, onCycleCell, onClear, onUndo } = useBoard(
-    seed,
-    size,
-    initial,
-  );
+  const { board, regionMap, validation, isGenerating, onCycleCell, onMarkCell, onClear, onUndo } =
+    useBoard(seed, size, initial);
 
   const handleNewBoard = useCallback(() => {
     // Generate a new random seed
@@ -75,6 +72,7 @@ const Home = () => {
                   regionMap={regionMap}
                   validation={validation}
                   onCycleCell={onCycleCell}
+                  onMarkCell={onMarkCell}
                 />
               </div>
 

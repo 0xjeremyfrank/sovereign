@@ -38,6 +38,26 @@ export const cycleCellState = (board: BoardState, row: number, col: number): Boa
   };
 };
 
+export const markCell = (board: BoardState, row: number, col: number): BoardState => {
+  if (row < 0 || row >= board.size) return board;
+  if (col < 0 || col >= board.size) return board;
+
+  const idx = linear(row, col, board.size);
+  const current = board.cells[idx];
+
+  // Only mark if currently blank or sovereign (skip if already marked)
+  if (current === 'marked') return board;
+
+  const newCells = board.cells.slice();
+  newCells[idx] = 'marked';
+
+  return {
+    ...board,
+    cells: newCells,
+    history: saveHistory(board),
+  };
+};
+
 export const clearBoard = (board: BoardState): BoardState => {
   return {
     ...board,
