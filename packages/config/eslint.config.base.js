@@ -128,6 +128,13 @@ export const baseConfig = [
   },
   prettierConfig,
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/build/**', '**/coverage/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.next/**',
+      '**/build/**',
+      '**/coverage/**',
+      '.product/**',
+    ],
   },
 ];
