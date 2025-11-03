@@ -101,7 +101,14 @@ export default [
     },
   },
   {
-    files: ['apps/**/*.js', 'apps/**/*.cjs', 'apps/**/*.mjs', 'packages/**/*.js', 'packages/**/*.cjs', 'packages/**/*.mjs'],
+    files: [
+      'apps/**/*.js',
+      'apps/**/*.cjs',
+      'apps/**/*.mjs',
+      'packages/**/*.js',
+      'packages/**/*.cjs',
+      'packages/**/*.mjs',
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

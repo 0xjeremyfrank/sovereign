@@ -35,7 +35,7 @@ self.addEventListener('message', (event: MessageEvent<GenerateMessage>) => {
     try {
       console.log(`[Worker] Generating puzzle - size: ${payload.size}, seed: ${payload.seed}`);
       const puzzle = generateLogicSolvablePuzzle(payload.seed, payload.size, payload.options);
-      console.log(`[Worker] Puzzle generated successfully`);
+      console.log('[Worker] Puzzle generated successfully');
 
       const response: GenerateResponse = {
         type: 'SUCCESS',
