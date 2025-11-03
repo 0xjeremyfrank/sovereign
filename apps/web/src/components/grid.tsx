@@ -79,7 +79,7 @@ export const Grid: React.FC<Props> = ({
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!isDraggingRef.current) return;
       e.preventDefault();
 
@@ -133,7 +133,7 @@ export const Grid: React.FC<Props> = ({
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleTouchMove = (e: globalThis.TouchEvent) => {
       if (!isDraggingRef.current) return;
       e.preventDefault();
 
