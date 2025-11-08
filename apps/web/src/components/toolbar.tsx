@@ -1,6 +1,6 @@
 import React from 'react';
 import type { BoardState } from '@sovereign/engine';
-import { IconUndo } from './icons';
+import { IconUndo, IconChevronDown } from './icons';
 
 interface Props {
   board: BoardState;
@@ -31,18 +31,21 @@ export const Toolbar: React.FC<Props> = ({
         >
           New Board
         </button>
-        <select
-          className="px-3 py-2 rounded-xl shadow-sm bg-white border border-slate-200 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          value={size}
-          onChange={(e) => onSizeChange(Number(e.target.value))}
-          aria-label="Board size"
-        >
-          {[5, 6, 7, 8, 9, 10].map((k) => (
-            <option key={k} value={k}>
-              {k}×{k}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            className="pl-3 pr-8 py-2 rounded-xl shadow-sm bg-white border border-slate-200 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+            value={size}
+            onChange={(e) => onSizeChange(Number(e.target.value))}
+            aria-label="Board size"
+          >
+            {[5, 6, 7, 8, 9, 10].map((k) => (
+              <option key={k} value={k}>
+                {k}×{k}
+              </option>
+            ))}
+          </select>
+          <IconChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500" />
+        </div>
       </div>
       <div className="flex items-center gap-2 ml-auto">
         <button
