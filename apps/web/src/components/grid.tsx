@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import type { BoardState, RegionMap, ValidationResult, CellState } from '@sovereign/engine';
+import { IconCrown } from './icons';
 
 interface Props {
   board: BoardState;
@@ -276,13 +277,9 @@ export const Grid: React.FC<Props> = ({
             )}
           >
             {cellState === 'marked' && (
-              <span className="text-sm font-semibold text-slate-700/80">×</span>
+              <span className="text-2xl font-semibold text-slate-700/80">×</span>
             )}
-            {cellState === 'sovereign' && (
-              <span className="flex items-center gap-1 text-slate-800">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-900/90" />
-              </span>
-            )}
+            {cellState === 'sovereign' && <IconCrown className="text-slate-900 w-7 h-7" />}
           </button>
         );
       })}

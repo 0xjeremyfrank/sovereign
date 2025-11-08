@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ValidationResult } from '@sovereign/engine';
+import { IconCrown } from './icons';
 
 const classNames = (...classes: (string | false | undefined)[]) =>
   classes.filter(Boolean).join(' ');
@@ -12,10 +13,10 @@ export const Legend: React.FC<Props> = ({ validation }) => {
   return (
     <div className="grid grid-cols-2 gap-3 text-sm text-slate-700">
       <div className="inline-flex items-center gap-2">
-        <span className="w-3 h-3 rounded-full bg-slate-900" /> <span>Sovereign</span>
+        <IconCrown className="text-slate-900 w-6 h-6" /> <span>Sovereign</span>
       </div>
       <div className="inline-flex items-center gap-2">
-        <span className="text-slate-700/80">×</span> <span>Mark</span>
+        <span className="text-2xl text-slate-700/80">×</span> <span>Mark</span>
       </div>
       <span
         className={classNames(

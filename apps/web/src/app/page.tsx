@@ -39,7 +39,7 @@ const Home = () => {
         <header className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              Sovereign <span className="text-slate-400">•</span>
+              Sovereign <span className="text-slate-400"></span>
               <span className="inline-flex items-center gap-2 text-base font-medium text-slate-600">
                 <IconCrown className="text-slate-800" /> logic puzzle
               </span>
@@ -97,7 +97,7 @@ const Home = () => {
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <h3 className="font-semibold mb-2">How to Play</h3>
                   <p className="text-sm text-slate-700">
-                    Click cells to cycle through: blank → mark (×) → sovereign (●).
+                    Click cells to cycle through: blank → mark (×) → sovereign (crown).
                   </p>
                 </div>
               </aside>
