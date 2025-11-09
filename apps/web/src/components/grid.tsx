@@ -8,6 +8,7 @@ interface Props {
   validation: ValidationResult;
   onCycleCell: (row: number, col: number) => void;
   onMarkCell: (row: number, col: number) => void;
+  isLocked?: boolean;
 }
 
 const PASTELS = [
@@ -32,6 +33,7 @@ export const Grid: React.FC<Props> = ({
   validation,
   onCycleCell,
   onMarkCell,
+  isLocked = false,
 }) => {
   const size = board.size;
   const [isDragging, setIsDragging] = useState(false);
@@ -235,7 +237,7 @@ export const Grid: React.FC<Props> = ({
       role="grid"
       aria-label="Puzzle grid"
       tabIndex={0}
-      className="grid gap-1.5"
+      className={classNames('grid gap-1.5', isLocked && 'pointer-events-none opacity-90')}
       style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
@@ -275,6 +277,7 @@ export const Grid: React.FC<Props> = ({
               pastel,
               violation && 'ring-2 ring-red-500',
             )}
+            disabled={isLocked}
           >
             {cellState === 'marked' && (
               <span className="text-2xl font-semibold text-slate-700/80">×</span>

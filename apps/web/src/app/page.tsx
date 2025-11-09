@@ -66,13 +66,25 @@ const Home = () => {
           ) : (
             <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Board */}
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 relative">
+                {validation.isComplete && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                    <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-8 py-6 rounded-2xl shadow-2xl transform animate-pulse border-4 border-white/50">
+                      <div className="text-center">
+                        <div className="text-5xl font-bold mb-2">🎉</div>
+                        <div className="text-4xl font-bold tracking-tight">You Win!</div>
+                        <div className="text-lg mt-2 opacity-90">Puzzle Solved</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Grid
                   board={board}
                   regionMap={regionMap}
                   validation={validation}
                   onCycleCell={onCycleCell}
                   onMarkCell={onMarkCell}
+                  isLocked={validation.isComplete}
                 />
               </div>
 
