@@ -12,18 +12,18 @@ interface Props {
 }
 
 const PASTELS = [
+  'bg-sky-200/70',
+  'bg-amber-200/70',
+  'bg-emerald-200/70',
+  'bg-violet-200/70',
   'bg-rose-200/70',
-  'bg-red-200/70',
+  'bg-lime-200/70',
+  'bg-indigo-200/70',
   'bg-orange-200/70',
-  'bg-lime-300/70',
-  'bg-emerald-400/70',
-  'bg-teal-400/70',
-  'bg-cyan-300/70',
-  'bg-blue-400/70',
-  'bg-indigo-300/70',
-  'bg-purple-300/70',
+  'bg-teal-300/70',
   'bg-fuchsia-200/70',
-  'bg-pink-200/70',
+  'bg-blue-200/70',
+  'bg-yellow-200/70',
 ];
 
 const classNames = (...classes: (string | false | undefined)[]) =>
