@@ -64,6 +64,34 @@ contract FirstBloodContest {
 
   uint256 public nextContestId;
 
+  // ============ Errors ============
+
+  error NotSponsor(uint256 contestId, address caller);
+  error PrizePoolRequired();
+  error InsufficientPrizeDeposit(uint256 required, uint256 provided);
+  error InvalidSize(uint8 size);
+  error TopNMustBeGreaterThanZero();
+  error ReleaseBlockMustBeFuture(uint256 releaseBlock, uint256 currentBlock);
+  error NotScheduled(uint256 contestId);
+  error ReleaseBlockNotReached(uint256 releaseBlock, uint256 currentBlock);
+  error BlockhashUnavailable(uint256 blockNumber);
+  error CommitsNotOpen(uint256 contestId, ContestState state);
+  error CommitWindowClosed(uint256 contestId, uint256 currentBlock, uint256 windowEndsAt);
+  error AlreadyCommitted(uint256 contestId, address solver);
+  error IncorrectDeposit(uint256 required, uint256 provided);
+  error NoCommitmentFound(uint256 contestId, address solver);
+  error AlreadyRevealed(uint256 contestId, address solver);
+  error RevealsNotOpen(uint256 contestId, ContestState state);
+  error CommitBufferActive(uint256 contestId, uint256 currentBlock, uint256 bufferEndsAt);
+  error CommitMismatch(uint256 contestId, address solver);
+  error RewardTransferFailed(address recipient, uint256 amount);
+  error DepositRefundFailed(address recipient, uint256 amount);
+  error AlreadyClosed(uint256 contestId);
+  error ContestNotReadyToClose(uint256 contestId, uint8 winnerCount, uint8 topN, uint256 currentBlock, uint256 revealWindowEndsAt);
+  error ContestNotClosed(uint256 contestId, ContestState state);
+  error NoRemainingPrize(uint256 contestId);
+  error WithdrawalFailed(address recipient, uint256 amount);
+
   // ============ Events ============
 
   event ContestScheduled(
@@ -103,7 +131,9 @@ contract FirstBloodContest {
   // ============ Modifiers ============
 
   modifier onlySponsor(uint256 contestId) {
-    require(contests[contestId].sponsor == msg.sender, 'FirstBloodContest: not sponsor');
+    if (contests[contestId].sponsor != msg.sender) {
+      revert NotSponsor(contestId, msg.sender);
+    }
     _;
   }
 
@@ -113,11 +143,11 @@ contract FirstBloodContest {
   /// @param params Contest parameters
   /// @return contestId The ID of the newly scheduled contest
   function scheduleContest(ContestParams memory params) external payable returns (uint256 contestId) {
-    require(params.prizePoolWei > 0, 'FirstBloodContest: prize pool required');
-    require(msg.value >= params.prizePoolWei, 'FirstBloodContest: insufficient prize deposit');
-    require(params.size >= 5 && params.size <= 10, 'FirstBloodContest: invalid size');
-    require(params.topN > 0, 'FirstBloodContest: topN must be > 0');
-    require(params.releaseBlock > block.number, 'FirstBloodContest: releaseBlock must be future');
+    if (params.prizePoolWei == 0) revert PrizePoolRequired();
+    if (msg.value < params.prizePoolWei) revert InsufficientPrizeDeposit(params.prizePoolWei, msg.value);
+    if (params.size < 5 || params.size > 10) revert InvalidSize(params.size);
+    if (params.topN == 0) revert TopNMustBeGreaterThanZero();
+    if (params.releaseBlock <= block.number) revert ReleaseBlockMustBeFuture(params.releaseBlock, block.number);
 
     contestId = nextContestId++;
     contests[contestId] = params;
@@ -151,13 +181,13 @@ contract FirstBloodContest {
     ContestStateData storage state = contestStates[contestId];
     ContestParams memory params = contests[contestId];
 
-    require(state.state == ContestState.Scheduled, 'FirstBloodContest: not scheduled');
-    require(block.number >= params.releaseBlock, 'FirstBloodContest: releaseBlock not reached');
+    if (state.state != ContestState.Scheduled) revert NotScheduled(contestId);
+    if (block.number < params.releaseBlock) revert ReleaseBlockNotReached(params.releaseBlock, block.number);
 
     // MVP: derive seed from blockhash
     // TODO: Replace with Autonomys Proof of Time randomness
     bytes32 seedSource = blockhash(params.releaseBlock);
-    require(seedSource != bytes32(0), 'FirstBloodContest: blockhash unavailable');
+    if (seedSource == bytes32(0)) revert BlockhashUnavailable(params.releaseBlock);
 
     state.globalSeed = keccak256(abi.encodePacked(seedSource, contestId));
     state.randomnessCapturedAt = block.number;
@@ -173,15 +203,18 @@ contract FirstBloodContest {
     ContestStateData storage state = contestStates[contestId];
     ContestParams memory params = contests[contestId];
 
-    require(
-      state.state == ContestState.CommitOpen || state.state == ContestState.RevealOpen,
-      'FirstBloodContest: commits not open'
-    );
-    require(block.number < state.commitWindowEndsAt, 'FirstBloodContest: commit window closed');
-    require(commits[contestId][msg.sender].commitHash == bytes32(0), 'FirstBloodContest: already committed');
+    if (state.state != ContestState.CommitOpen && state.state != ContestState.RevealOpen) {
+      revert CommitsNotOpen(contestId, state.state);
+    }
+    if (block.number >= state.commitWindowEndsAt) {
+      revert CommitWindowClosed(contestId, block.number, state.commitWindowEndsAt);
+    }
+    if (commits[contestId][msg.sender].commitHash != bytes32(0)) {
+      revert AlreadyCommitted(contestId, msg.sender);
+    }
 
     if (params.entryDepositWei > 0) {
-      require(msg.value == params.entryDepositWei, 'FirstBloodContest: incorrect deposit');
+      if (msg.value != params.entryDepositWei) revert IncorrectDeposit(params.entryDepositWei, msg.value);
     }
 
     commits[contestId][msg.sender] = Commitment({
@@ -202,21 +235,20 @@ contract FirstBloodContest {
     ContestParams memory params = contests[contestId];
     Commitment memory commitment = commits[contestId][msg.sender];
 
-    require(commitment.commitHash != bytes32(0), 'FirstBloodContest: no commitment found');
-    require(!hasRevealed[contestId][msg.sender], 'FirstBloodContest: already revealed');
-    require(
-      state.state == ContestState.RevealOpen || state.state == ContestState.CommitOpen,
-      'FirstBloodContest: reveals not open'
-    );
+    if (commitment.commitHash == bytes32(0)) revert NoCommitmentFound(contestId, msg.sender);
+    if (hasRevealed[contestId][msg.sender]) revert AlreadyRevealed(contestId, msg.sender);
+    if (state.state != ContestState.RevealOpen && state.state != ContestState.CommitOpen) {
+      revert RevealsNotOpen(contestId, state.state);
+    }
 
     // Check commit buffer: reveals only allowed after buffer period
     uint256 bufferEndsAt = state.randomnessCapturedAt + params.commitBuffer;
-    require(block.number >= bufferEndsAt, 'FirstBloodContest: commit buffer active');
+    if (block.number < bufferEndsAt) revert CommitBufferActive(contestId, block.number, bufferEndsAt);
 
     // Verify commit hash
     bytes32 solutionHash = keccak256(encodedSolution);
     bytes32 expectedCommit = keccak256(abi.encodePacked(contestId, msg.sender, solutionHash, salt));
-    require(expectedCommit == commitment.commitHash, 'FirstBloodContest: commit mismatch');
+    if (expectedCommit != commitment.commitHash) revert CommitMismatch(contestId, msg.sender);
 
     // TODO: Decode encodedSolution and validate board
     // For now, stub validation
@@ -237,12 +269,12 @@ contract FirstBloodContest {
 
       // Transfer reward immediately
       (bool success,) = payable(msg.sender).call{ value: rewardWei }('');
-      require(success, 'FirstBloodContest: reward transfer failed');
+      if (!success) revert RewardTransferFailed(msg.sender, rewardWei);
 
       // Refund deposit if any
       if (commitment.depositPaid > 0) {
         (success,) = payable(msg.sender).call{ value: commitment.depositPaid }('');
-        require(success, 'FirstBloodContest: deposit refund failed');
+        if (!success) revert DepositRefundFailed(msg.sender, commitment.depositPaid);
       }
 
       emit SolutionRevealed(contestId, msg.sender, rank, rewardWei, true);
@@ -263,7 +295,9 @@ contract FirstBloodContest {
   /// @notice Close contest (called automatically when topN reached or window expires)
   function closeContest(uint256 contestId) external {
     ContestStateData storage state = contestStates[contestId];
-    require(state.state != ContestState.Closed && state.state != ContestState.Finalized, 'FirstBloodContest: already closed');
+    if (state.state == ContestState.Closed || state.state == ContestState.Finalized) {
+      revert AlreadyClosed(contestId);
+    }
 
     bool shouldClose = false;
     if (state.winnerCount >= contests[contestId].topN) {
@@ -272,21 +306,29 @@ contract FirstBloodContest {
       shouldClose = true;
     }
 
-    require(shouldClose, 'FirstBloodContest: contest not ready to close');
+    if (!shouldClose) {
+      revert ContestNotReadyToClose(
+        contestId,
+        state.winnerCount,
+        contests[contestId].topN,
+        block.number,
+        state.revealWindowEndsAt
+      );
+    }
     _closeContest(contestId);
   }
 
   /// @notice Sponsor can withdraw remaining prize after contest closes
   function withdrawRemainingPrize(uint256 contestId) external onlySponsor(contestId) {
     ContestStateData storage state = contestStates[contestId];
-    require(state.state == ContestState.Closed, 'FirstBloodContest: contest not closed');
+    if (state.state != ContestState.Closed) revert ContestNotClosed(contestId, state.state);
 
     uint256 amount = state.remainingPrizeWei;
-    require(amount > 0, 'FirstBloodContest: no remaining prize');
+    if (amount == 0) revert NoRemainingPrize(contestId);
 
     state.remainingPrizeWei = 0;
     (bool success,) = payable(contests[contestId].sponsor).call{ value: amount }('');
-    require(success, 'FirstBloodContest: withdrawal failed');
+    if (!success) revert WithdrawalFailed(contests[contestId].sponsor, amount);
 
     emit PrizeWithdrawn(contestId, contests[contestId].sponsor, amount);
   }

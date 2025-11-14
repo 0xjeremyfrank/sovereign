@@ -97,7 +97,7 @@ contract FirstBloodContestTest is Test {
     params.prizePoolWei = 0;
 
     vm.prank(sponsor);
-    vm.expectRevert('FirstBloodContest: prize pool required');
+    vm.expectRevert(FirstBloodContest.PrizePoolRequired.selector);
     contest.scheduleContest{ value: 0 }(params);
   }
 
@@ -105,7 +105,9 @@ contract FirstBloodContestTest is Test {
     FirstBloodContest.ContestParams memory params = createContestParams(block.number + 10);
 
     vm.prank(sponsor);
-    vm.expectRevert('FirstBloodContest: insufficient prize deposit');
+    vm.expectRevert(
+      abi.encodeWithSelector(FirstBloodContest.InsufficientPrizeDeposit.selector, PRIZE_POOL, PRIZE_POOL - 1)
+    );
     contest.scheduleContest{ value: PRIZE_POOL - 1 }(params);
   }
 
@@ -114,11 +116,11 @@ contract FirstBloodContestTest is Test {
     params.size = 4; // Too small
 
     vm.prank(sponsor);
-    vm.expectRevert('FirstBloodContest: invalid size');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.InvalidSize.selector, uint8(4)));
     contest.scheduleContest{ value: PRIZE_POOL }(params);
 
     params.size = 11; // Too large
-    vm.expectRevert('FirstBloodContest: invalid size');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.InvalidSize.selector, uint8(11)));
     contest.scheduleContest{ value: PRIZE_POOL }(params);
   }
 
@@ -126,7 +128,9 @@ contract FirstBloodContestTest is Test {
     FirstBloodContest.ContestParams memory params = createContestParams(block.number - 1);
 
     vm.prank(sponsor);
-    vm.expectRevert('FirstBloodContest: releaseBlock must be future');
+    vm.expectRevert(
+      abi.encodeWithSelector(FirstBloodContest.ReleaseBlockMustBeFuture.selector, block.number - 1, block.number)
+    );
     contest.scheduleContest{ value: PRIZE_POOL }(params);
   }
 
@@ -187,14 +191,16 @@ contract FirstBloodContestTest is Test {
     uint256 contestId = contest.scheduleContest{ value: PRIZE_POOL }(params);
 
     // Try to capture before release block
-    vm.expectRevert('FirstBloodContest: releaseBlock not reached');
+    vm.expectRevert(
+      abi.encodeWithSelector(FirstBloodContest.ReleaseBlockNotReached.selector, releaseBlock, block.number)
+    );
     contest.captureRandomness(contestId);
 
     // Advance and capture (need to advance past releaseBlock to access blockhash)
     advanceAndCaptureRandomness(contestId, releaseBlock);
 
     // Try to capture again (should fail since state is now CommitOpen)
-    vm.expectRevert('FirstBloodContest: not scheduled');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.NotScheduled.selector, contestId));
     contest.captureRandomness(contestId);
   }
 
@@ -209,7 +215,7 @@ contract FirstBloodContestTest is Test {
     // Advance too far (blockhash only available for last 256 blocks)
     vm.roll(releaseBlock + 257);
 
-    vm.expectRevert('FirstBloodContest: blockhash unavailable');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.BlockhashUnavailable.selector, releaseBlock));
     contest.captureRandomness(contestId);
   }
 
@@ -254,11 +260,11 @@ contract FirstBloodContestTest is Test {
     bytes32 commitHash = keccak256('test');
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: incorrect deposit');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.IncorrectDeposit.selector, ENTRY_DEPOSIT, ENTRY_DEPOSIT - 1));
     contest.commitSolution{ value: ENTRY_DEPOSIT - 1 }(contestId, commitHash);
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: incorrect deposit');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.IncorrectDeposit.selector, ENTRY_DEPOSIT, ENTRY_DEPOSIT + 1));
     contest.commitSolution{ value: ENTRY_DEPOSIT + 1 }(contestId, commitHash);
   }
 
@@ -293,7 +299,9 @@ contract FirstBloodContestTest is Test {
     bytes32 commitHash = keccak256('test');
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: commits not open');
+    vm.expectRevert(
+      abi.encodeWithSelector(FirstBloodContest.CommitsNotOpen.selector, contestId, FirstBloodContest.ContestState.Scheduled)
+    );
     contest.commitSolution{ value: ENTRY_DEPOSIT }(contestId, commitHash);
   }
 
@@ -313,7 +321,7 @@ contract FirstBloodContestTest is Test {
     contest.commitSolution{ value: ENTRY_DEPOSIT }(contestId, commitHash);
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: already committed');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.AlreadyCommitted.selector, contestId, solver1));
     contest.commitSolution{ value: ENTRY_DEPOSIT }(contestId, commitHash);
   }
 
@@ -328,12 +336,13 @@ contract FirstBloodContestTest is Test {
     advanceAndCaptureRandomness(contestId, releaseBlock);
 
     // Advance past commit window
-    vm.roll(releaseBlock + COMMIT_WINDOW + 1);
+    uint256 windowEndsAt = releaseBlock + 1 + COMMIT_WINDOW;
+    vm.roll(windowEndsAt + 1);
 
     bytes32 commitHash = keccak256('test');
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: commit window closed');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.CommitWindowClosed.selector, contestId, windowEndsAt + 1, windowEndsAt));
     contest.commitSolution{ value: ENTRY_DEPOSIT }(contestId, commitHash);
   }
 
@@ -405,8 +414,9 @@ contract FirstBloodContestTest is Test {
     // Try to reveal before buffer ends
     vm.roll(releaseBlock + 1 + COMMIT_BUFFER - 1); // +1 for randomness capture block
 
+    uint256 bufferEndsAt = releaseBlock + 1 + COMMIT_BUFFER;
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: commit buffer active');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.CommitBufferActive.selector, contestId, bufferEndsAt - 1, bufferEndsAt));
     contest.revealSolution(contestId, solution, salt);
   }
 
@@ -432,7 +442,7 @@ contract FirstBloodContestTest is Test {
     // Wrong salt
     bytes32 wrongSalt = keccak256('wrong salt');
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: commit mismatch');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.CommitMismatch.selector, contestId, solver1));
     contest.revealSolution(contestId, solution, wrongSalt);
   }
 
@@ -451,7 +461,7 @@ contract FirstBloodContestTest is Test {
     bytes32 salt = keccak256('salt');
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: no commitment found');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.NoCommitmentFound.selector, contestId, solver1));
     contest.revealSolution(contestId, solution, salt);
   }
 
@@ -479,7 +489,7 @@ contract FirstBloodContestTest is Test {
 
     // Try to reveal again
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: already revealed');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.AlreadyRevealed.selector, contestId, solver1));
     contest.revealSolution(contestId, solution, salt);
   }
 
@@ -642,7 +652,17 @@ contract FirstBloodContestTest is Test {
     advanceAndCaptureRandomness(contestId, releaseBlock);
 
     // Try to close before window ends
-    vm.expectRevert('FirstBloodContest: contest not ready to close');
+    (, FirstBloodContest.ContestStateData memory state) = contest.getContest(contestId);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        FirstBloodContest.ContestNotReadyToClose.selector,
+        contestId,
+        state.winnerCount,
+        params.topN,
+        block.number,
+        state.revealWindowEndsAt
+      )
+    );
     contest.closeContest(contestId);
   }
 
@@ -701,7 +721,7 @@ contract FirstBloodContestTest is Test {
     contest.closeContest(contestId);
 
     vm.prank(solver1);
-    vm.expectRevert('FirstBloodContest: not sponsor');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.NotSponsor.selector, contestId, solver1));
     contest.withdrawRemainingPrize(contestId);
   }
 
@@ -713,8 +733,9 @@ contract FirstBloodContestTest is Test {
     vm.prank(sponsor);
     uint256 contestId = contest.scheduleContest{ value: PRIZE_POOL }(params);
 
+    (, FirstBloodContest.ContestStateData memory state) = contest.getContest(contestId);
     vm.prank(sponsor);
-    vm.expectRevert('FirstBloodContest: contest not closed');
+    vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.ContestNotClosed.selector, contestId, state.state));
     contest.withdrawRemainingPrize(contestId);
   }
 }
