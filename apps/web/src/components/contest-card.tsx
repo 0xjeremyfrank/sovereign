@@ -18,7 +18,7 @@ type ContestParams = {
 };
 
 type ContestStateData = {
-  state: number; // ContestState enum
+  state: number;
   globalSeed: `0x${string}`;
   puzzleHash: `0x${string}`;
   randomnessCapturedAt: bigint;
@@ -66,7 +66,8 @@ const getStateColor = (state: number): string => {
 export const ContestCard = ({ contest }: { contest: Contest }) => {
   const stateName = CONTEST_STATE_NAMES[contest.state.state] || 'Unknown';
   const prizePool = formatEther(contest.params.prizePoolWei);
-  const entryDeposit = contest.params.entryDepositWei > 0n ? formatEther(contest.params.entryDepositWei) : null;
+  const entryDeposit =
+    contest.params.entryDepositWei > 0n ? formatEther(contest.params.entryDepositWei) : null;
 
   return (
     <Link href={`/contests/${contest.contestId.toString()}`}>
@@ -74,9 +75,13 @@ export const ContestCard = ({ contest }: { contest: Contest }) => {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-xl font-semibold">Contest #{contest.contestId.toString()}</h3>
-            <p className="text-sm text-slate-500 mt-1">Size: {contest.params.size}x{contest.params.size}</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Size: {contest.params.size}x{contest.params.size}
+            </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStateColor(contest.state.state)}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${getStateColor(contest.state.state)}`}
+          >
             {stateName}
           </span>
         </div>
@@ -102,13 +107,10 @@ export const ContestCard = ({ contest }: { contest: Contest }) => {
           </div>
 
           <div className="pt-2 border-t border-slate-200">
-            <p className="text-xs text-slate-500">
-              Engine: {contest.params.engineVersion}
-            </p>
+            <p className="text-xs text-slate-500">Engine: {contest.params.engineVersion}</p>
           </div>
         </div>
       </div>
     </Link>
   );
 };
-

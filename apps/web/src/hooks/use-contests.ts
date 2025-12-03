@@ -7,6 +7,32 @@ import { autonomysChronos } from '../lib/wagmi-config';
 
 const CHAIN_ID = autonomysChronos.id;
 
+type ContestParams = {
+  generatorCodeCid: string;
+  engineVersion: string;
+  size: number;
+  releaseBlock: bigint;
+  commitWindow: bigint;
+  commitBuffer: bigint;
+  revealWindow: bigint;
+  topN: number;
+  entryDepositWei: bigint;
+  prizePoolWei: bigint;
+  sponsor: `0x${string}`;
+};
+
+type ContestStateData = {
+  state: number;
+  globalSeed: `0x${string}`;
+  puzzleHash: `0x${string}`;
+  randomnessCapturedAt: bigint;
+  commitWindowEndsAt: bigint;
+  revealWindowEndsAt: bigint;
+  winnerCount: number;
+  remainingPrizeWei: bigint;
+  forfeitedDepositsWei: bigint;
+};
+
 export const useNextContestId = () => {
   const publicClient = usePublicClient();
   const contract = useMemo(() => {
@@ -93,44 +119,19 @@ export const useContests = () => {
   });
 
   const contests = useMemo(() => {
-    if (!contestsData || !nextContestId) return [];
+    if (!contestsData || !contestIds.length) return [];
     return contestsData
       .map((result, index) => {
-        if (result.status !== 'success' || !result.result) return null;
-        const [params, state] = result.result as [
-          {
-            generatorCodeCid: string;
-            engineVersion: string;
-            size: number;
-            releaseBlock: bigint;
-            commitWindow: bigint;
-            commitBuffer: bigint;
-            revealWindow: bigint;
-            topN: number;
-            entryDepositWei: bigint;
-            prizePoolWei: bigint;
-            sponsor: `0x${string}`;
-          },
-          {
-            state: number;
-            globalSeed: `0x${string}`;
-            puzzleHash: `0x${string}`;
-            randomnessCapturedAt: bigint;
-            commitWindowEndsAt: bigint;
-            revealWindowEndsAt: bigint;
-            winnerCount: number;
-            remainingPrizeWei: bigint;
-            forfeitedDepositsWei: bigint;
-          },
-        ];
+        if (result.status !== 'success' || !result.result || !contestIds[index]) return null;
+        const [params, state] = result.result as [ContestParams, ContestStateData];
         return {
-          contestId: BigInt(index),
+          contestId: contestIds[index],
           params,
           state,
         };
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
-  }, [contestsData, nextContestId]);
+  }, [contestsData, contestIds]);
 
   return {
     contests,
