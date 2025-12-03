@@ -3,4 +3,10 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+# Network configurations
+[rpc_endpoints]
+anvil = "http://localhost:8545"
+chronos = "https://auto-evm.chronos.autonomys.xyz/ws"
+autonomys = "https://auto-evm.mainnet.autonomys.xyz/ws"
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

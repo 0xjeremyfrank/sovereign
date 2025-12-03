@@ -6,8 +6,9 @@ import type { AddressOptions, AddressOverrides, ContractConfig } from './types';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const satisfies Hex;
 
 const STATIC_ADDRESSES: AddressOverrides = {
-  31337: ZERO_ADDRESS,
-  17000: ZERO_ADDRESS,
+  31337: ZERO_ADDRESS, // Anvil (local)
+  490000: ZERO_ADDRESS, // Autonomys Chronos (testnet)
+  870: ZERO_ADDRESS, // Autonomys Mainnet
 };
 
 const getProcessEnv = (): Record<string, string | undefined> | undefined => {
