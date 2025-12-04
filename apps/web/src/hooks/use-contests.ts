@@ -84,7 +84,7 @@ export const useContests = () => {
   const contestIds = useMemo(() => {
     if (!nextContestId || typeof nextContestId !== 'bigint' || nextContestId === 0n) return [];
     const ids: bigint[] = [];
-    for (let i = 0n; i < nextContestId; i++) {
+    for (let i = 0n; i < nextContestId; i += 1n) {
       ids.push(i);
     }
     return ids;
@@ -122,10 +122,11 @@ export const useContests = () => {
     if (!contestsData || !contestIds.length) return [];
     return contestsData
       .map((result, index) => {
-        if (result.status !== 'success' || !result.result || !contestIds[index]) return null;
+        if (result.status !== 'success' || !result.result || index >= contestIds.length)
+          return null;
         const [params, state] = result.result as [ContestParams, ContestStateData];
         return {
-          contestId: contestIds[index],
+          contestId: contestIds[index]!,
           params,
           state,
         };
@@ -138,4 +139,3 @@ export const useContests = () => {
     isLoading: isLoadingNextId || isLoading,
   };
 };
-

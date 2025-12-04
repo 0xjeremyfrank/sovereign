@@ -19,7 +19,10 @@ const getProcessEnv = (): Record<string, string | undefined> | undefined => {
   return process.env;
 };
 
-const readEnvAddress = (chainId: number, env?: Record<string, string | undefined>): Hex | undefined => {
+const readEnvAddress = (
+  chainId: number,
+  env?: Record<string, string | undefined>,
+): Hex | undefined => {
   if (!env) {
     return undefined;
   }
@@ -54,4 +57,3 @@ export const createFirstBloodContestConfig = (
 };
 
 export const firstBloodContestAddressBook = STATIC_ADDRESSES;
-
