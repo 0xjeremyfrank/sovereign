@@ -31,7 +31,7 @@ case $NETWORK in
     ;;
   chronos)
     RPC_URL="https://auto-evm.chronos.autonomys.xyz/ws"
-    CHAIN_ID="490000"
+    CHAIN_ID="8700"
     ;;
   autonomys|mainnet)
     RPC_URL="https://auto-evm.mainnet.autonomys.xyz/ws"

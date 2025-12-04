@@ -3,7 +3,7 @@ import { defineChain } from 'viem';
 import { injected } from '@wagmi/connectors';
 
 export const autonomysChronos = defineChain({
-  id: 490000,
+  id: 8700,
   name: 'Autonomys Chronos',
   nativeCurrency: {
     name: 'Testnet AI3',

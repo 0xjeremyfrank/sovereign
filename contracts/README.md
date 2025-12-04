@@ -39,6 +39,7 @@ anvil
 ### Setup
 
 1. Set your private key as an environment variable:
+
    ```shell
    export PRIVATE_KEY=your_private_key_here
    ```
@@ -46,7 +47,7 @@ anvil
 2. **For Autonomys Testnet (Chronos)**: Get testnet tokens (tAI3) from the [Autonomys faucet](https://develop.autonomys.xyz/evm/faucet)
 
 3. Configure MetaMask or your wallet for Autonomys networks:
-   - **Chronos (Testnet)**: RPC `https://auto-evm.chronos.autonomys.xyz/ws`, Chain ID `490000`, Symbol `tAI3`
+   - **Chronos (Testnet)**: RPC `https://auto-evm.chronos.autonomys.xyz/ws`, Chain ID `8700`, Symbol `tAI3`
    - **Mainnet**: RPC `https://auto-evm.mainnet.autonomys.xyz/ws`, Chain ID `870`, Symbol `AI3`
 
 ### Deploy to Local (Anvil)
@@ -65,11 +66,13 @@ forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
 ### Deploy to Autonomys Testnet (Chronos)
 
 **Using the helper script (recommended):**
+
 ```shell
 ./script/deploy.sh chronos
 ```
 
 **Using forge directly:**
+
 ```shell
 forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
   --rpc-url chronos \
@@ -82,11 +85,13 @@ forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
 ### Deploy to Autonomys Mainnet
 
 **Using the helper script (recommended):**
+
 ```shell
 ./script/deploy.sh autonomys
 ```
 
 **Using forge directly:**
+
 ```shell
 forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
   --rpc-url autonomys \
@@ -106,8 +111,9 @@ Autonomys EVM has known gas estimation limitations. If you encounter errors like
 
 1. Copy the deployed address from the console output
 2. Set it in your environment:
+
    ```shell
-   export FIRST_BLOOD_CONTEST_ADDRESS_490000=0x...  # Chronos (testnet)
+   export FIRST_BLOOD_CONTEST_ADDRESS_8700=0x...  # Chronos (testnet)
    export FIRST_BLOOD_CONTEST_ADDRESS_870=0x...      # Autonomys (mainnet)
    ```
 
