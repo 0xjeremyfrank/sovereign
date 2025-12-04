@@ -63,8 +63,13 @@ Before viewing contests, you need to schedule at least one contest:
 
 ```bash
 cd contracts
-export CONTEST_ADDRESS=0xYourDeployedAddress
 export PRIVATE_KEY=your_private_key_here
+
+# Set contract address (chain-specific, matches deploy output)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0xYourDeployedAddress
+
+# Or use generic variable
+export CONTEST_ADDRESS=0xYourDeployedAddress
 
 # Schedule with defaults (1 ETH prize, releases in 10 blocks)
 ./script/schedule-contest.sh chronos

@@ -126,7 +126,10 @@ After deploying the contract, you can schedule test contests for UI testing.
 ### Quick Start
 
 ```shell
-# Set the deployed contract address
+# Set the deployed contract address (chain-specific, recommended)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0xYourDeployedAddress
+
+# Or use generic variable (works for any network)
 export CONTEST_ADDRESS=0xYourDeployedAddress
 
 # Schedule a contest (default: 1 ETH prize, releases in 10 blocks)
@@ -138,7 +141,10 @@ export CONTEST_ADDRESS=0xYourDeployedAddress
 You can override default parameters via environment variables:
 
 ```shell
-export CONTEST_ADDRESS=0xYourDeployedAddress
+# Set contract address (chain-specific or generic)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0xYourDeployedAddress
+
+# Customize contest parameters
 export PRIZE_POOL_WEI=1000000000000000000  # 1 ETH (in wei)
 export RELEASE_BLOCK_OFFSET=50              # Release in 50 blocks
 export SIZE=8                               # 8x8 board
@@ -164,8 +170,8 @@ export ENTRY_DEPOSIT_WEI=1000000000000000   # 0.001 ETH deposit (optional)
 ./script/deploy.sh chronos
 # Copy address: 0x1234...
 
-# 2. Set address
-export CONTEST_ADDRESS=0x1234...
+# 2. Set address (chain-specific, matches deploy output)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0x1234...
 
 # 3. Schedule contest
 ./script/schedule-contest.sh chronos

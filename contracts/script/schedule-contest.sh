@@ -17,22 +17,20 @@ if [ -z "$PRIVATE_KEY" ] && [ "$NETWORK" != "anvil" ]; then
   exit 1
 fi
 
-if [ -z "$CONTEST_ADDRESS" ]; then
-  echo "Error: CONTEST_ADDRESS environment variable not set"
-  echo "Set it with: export CONTEST_ADDRESS=0xYourContractAddress"
-  exit 1
-fi
-
 RPC_URL=""
+CHAIN_ID=""
 case $NETWORK in
   anvil)
     RPC_URL="http://localhost:8545"
+    CHAIN_ID="31337"
     ;;
   chronos)
-    RPC_URL="https://auto-evm.chronos.autonomys.xyz"
+    RPC_URL="https://auto-evm.chronos.autonomys.xyz/ws"
+    CHAIN_ID="8700"
     ;;
   autonomys|mainnet)
-    RPC_URL="https://auto-evm.mainnet.autonomys.xyz"
+    RPC_URL="https://auto-evm.mainnet.autonomys.xyz/ws"
+    CHAIN_ID="870"
     ;;
   *)
     echo "Error: Unknown network '$NETWORK'"
@@ -40,10 +38,28 @@ case $NETWORK in
     ;;
 esac
 
+CONTEST_ADDRESS_VAR="FIRST_BLOOD_CONTEST_ADDRESS_${CHAIN_ID}"
+GENERIC_VAR="CONTEST_ADDRESS"
+
+if [ -n "${!GENERIC_VAR}" ]; then
+  CONTEST_ADDRESS="${!GENERIC_VAR}"
+elif [ -n "${!CONTEST_ADDRESS_VAR}" ]; then
+  CONTEST_ADDRESS="${!CONTEST_ADDRESS_VAR}"
+fi
+
+if [ -z "$CONTEST_ADDRESS" ]; then
+  echo "Error: Contract address not set"
+  echo "Set it with: export $CONTEST_ADDRESS_VAR=0xYourContractAddress"
+  echo "Or use generic: export CONTEST_ADDRESS=0xYourContractAddress"
+  exit 1
+fi
+
+export CONTEST_ADDRESS
+
 CMD="forge script script/ScheduleContest.s.sol:ScheduleContest --rpc-url $RPC_URL --broadcast"
 
 if [ "$NETWORK" != "anvil" ]; then
-  CMD="$CMD --skip-simulation --legacy"
+  CMD="$CMD --skip-simulation --block-prevrandao 0x0000000000000000000000000000000000000000000000000000000000000000"
 fi
 
 if [ "$NETWORK" == "anvil" ]; then
