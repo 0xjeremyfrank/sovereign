@@ -56,7 +56,41 @@ NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337=0xYourDeployedAddressHere
 
 5. Get testnet tokens from the [Autonomys faucet](https://develop.autonomys.xyz/evm/faucet)
 
-### 4. View Contests
+### 4. Schedule a Test Contest
+
+Before viewing contests, you need to schedule at least one contest:
+
+```bash
+cd contracts
+export CONTEST_ADDRESS=0xYourDeployedAddress
+export PRIVATE_KEY=your_private_key_here
+
+# Schedule with defaults (1 ETH prize, releases in 10 blocks)
+./script/schedule-contest.sh chronos
+
+# Or customize parameters
+export PRIZE_POOL_WEI=1000000000000000000  # 1 ETH
+export SIZE=8                               # 8x8 board
+export TOP_N=3                              # Top 3 winners
+./script/schedule-contest.sh chronos
+```
+
+After scheduling, note the contest ID and release block from the output.
+
+### 5. Capture Randomness (Open Commits)
+
+Once the release block is reached, capture randomness to open the commit window:
+
+```bash
+# Using cast (from foundry)
+cast send $CONTEST_ADDRESS "captureRandomness(uint256)" 0 \
+  --rpc-url https://auto-evm.chronos.autonomys.xyz \
+  --private-key $PRIVATE_KEY
+```
+
+Or wait for the release block and call `captureRandomness` via the UI (once implemented).
+
+### 6. View Contests
 
 Navigate to `/contests` to see the contest list. If the contract address is set correctly, you should see:
 - Loading state while fetching
