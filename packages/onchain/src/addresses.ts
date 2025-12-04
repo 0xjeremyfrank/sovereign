@@ -16,7 +16,22 @@ const getProcessEnv = (): Record<string, string | undefined> | undefined => {
     return undefined;
   }
 
-  return process.env;
+  // In browser, Next.js exposes NEXT_PUBLIC_* vars via process.env
+  // In Node.js, process.env has all vars
+  // Next.js replaces process.env.NEXT_PUBLIC_* at build time
+  const env = process.env;
+
+  // Debug: log available env vars (only in development)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    const relevantKeys = Object.keys(env).filter((key) =>
+      key.includes('FIRST_BLOOD_CONTEST_ADDRESS'),
+    );
+    if (relevantKeys.length > 0) {
+      console.log('[onchain] Available contract address env vars:', relevantKeys);
+    }
+  }
+
+  return env;
 };
 
 const readEnvAddress = (
@@ -38,8 +53,23 @@ export const getFirstBloodContestAddress = (chainId: number, options: AddressOpt
   const resolved =
     options.overrides?.[chainId] ?? readEnvAddress(chainId, envSource) ?? STATIC_ADDRESSES[chainId];
 
-  if (!resolved) {
-    throw new Error(`FirstBloodContest address not configured for chain ${chainId}`);
+  if (!resolved || resolved === ZERO_ADDRESS) {
+    const envKey = `NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_${chainId}`;
+    const envSourceKeys = envSource
+      ? Object.keys(envSource).filter((k) => k.includes('FIRST_BLOOD'))
+      : [];
+    console.error('[onchain] Failed to resolve contract address:', {
+      chainId,
+      envKey,
+      availableKeys: envSourceKeys,
+      resolved,
+      envSourceExists: !!envSource,
+    });
+    throw new Error(
+      `FirstBloodContest address not configured for chain ${chainId}. ` +
+        `Set ${envKey} in your .env.local file and restart the dev server. ` +
+        `Available env keys: ${envSourceKeys.join(', ') || 'none'}`,
+    );
   }
 
   return resolved;

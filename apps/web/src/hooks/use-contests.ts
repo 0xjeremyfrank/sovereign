@@ -7,6 +7,28 @@ import { autonomysChronos } from '../lib/wagmi-config';
 
 const CHAIN_ID = autonomysChronos.id;
 
+const getContractAddress = (): string | null => {
+  let address: string | undefined;
+
+  if (CHAIN_ID === 8700) {
+    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_8700;
+  } else if (CHAIN_ID === 870) {
+    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_870;
+  } else if (CHAIN_ID === 31337) {
+    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337;
+  }
+
+  if (!address || address === '0x0000000000000000000000000000000000000000') {
+    const envKey = `NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_${CHAIN_ID}`;
+    console.warn(
+      `[use-contests] Contract address not found for chain ${CHAIN_ID}. Set ${envKey} in .env.local and restart dev server`,
+    );
+    return null;
+  }
+
+  return address;
+};
+
 type ContestParams = {
   generatorCodeCid: string;
   engineVersion: string;
@@ -35,14 +57,14 @@ type ContestStateData = {
 
 export const useNextContestId = () => {
   const publicClient = usePublicClient();
+  const contractAddress = useMemo(() => getContractAddress(), []);
+
   const contract = useMemo(() => {
-    if (!publicClient) return null;
-    try {
-      return createFirstBloodContestContract(publicClient, CHAIN_ID);
-    } catch {
-      return null;
-    }
-  }, [publicClient]);
+    if (!publicClient || !contractAddress) return null;
+    return createFirstBloodContestContract(publicClient, CHAIN_ID, {
+      overrides: { [CHAIN_ID]: contractAddress as `0x${string}` },
+    });
+  }, [publicClient, contractAddress]);
 
   return useReadContract({
     address: contract?.address,
@@ -57,14 +79,14 @@ export const useNextContestId = () => {
 
 export const useContest = (contestId: bigint | undefined) => {
   const publicClient = usePublicClient();
+  const contractAddress = useMemo(() => getContractAddress(), []);
+
   const contract = useMemo(() => {
-    if (!publicClient) return null;
-    try {
-      return createFirstBloodContestContract(publicClient, CHAIN_ID);
-    } catch {
-      return null;
-    }
-  }, [publicClient]);
+    if (!publicClient || !contractAddress) return null;
+    return createFirstBloodContestContract(publicClient, CHAIN_ID, {
+      overrides: { [CHAIN_ID]: contractAddress as `0x${string}` },
+    });
+  }, [publicClient, contractAddress]);
 
   return useReadContract({
     address: contract?.address,
@@ -82,7 +104,7 @@ export const useContests = () => {
   const { data: nextContestId, isLoading: isLoadingNextId } = useNextContestId();
 
   const contestIds = useMemo(() => {
-    if (!nextContestId || typeof nextContestId !== 'bigint' || nextContestId === 0n) return [];
+    if (typeof nextContestId !== 'bigint' || nextContestId === 0n) return [];
     const ids: bigint[] = [];
     for (let i = 0n; i < nextContestId; i += 1n) {
       ids.push(i);
@@ -91,14 +113,14 @@ export const useContests = () => {
   }, [nextContestId]);
 
   const publicClient = usePublicClient();
+  const contractAddress = useMemo(() => getContractAddress(), []);
+
   const contract = useMemo(() => {
-    if (!publicClient) return null;
-    try {
-      return createFirstBloodContestContract(publicClient, CHAIN_ID);
-    } catch {
-      return null;
-    }
-  }, [publicClient]);
+    if (!publicClient || !contractAddress) return null;
+    return createFirstBloodContestContract(publicClient, CHAIN_ID, {
+      overrides: { [CHAIN_ID]: contractAddress as `0x${string}` },
+    });
+  }, [publicClient, contractAddress]);
 
   const contracts = useMemo(() => {
     if (!contract || contestIds.length === 0) return [];
