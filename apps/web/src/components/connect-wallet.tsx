@@ -1,11 +1,29 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 export const ConnectWallet = () => {
+  const [mounted, setMounted] = useState(false);
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show consistent UI during SSR and initial render
+  if (!mounted) {
+    return (
+      <button
+        disabled
+        className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Connect Wallet
+      </button>
+    );
+  }
 
   if (isConnected) {
     return (
