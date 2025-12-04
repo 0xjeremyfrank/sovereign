@@ -112,3 +112,59 @@ Autonomys EVM has known gas estimation limitations. If you encounter errors like
    ```
 
 3. View your contract on the [Autonomys Block Explorer](https://explorer.autonomys.xyz)
+
+## Scheduling Test Contests
+
+After deploying the contract, you can schedule test contests for UI testing.
+
+### Quick Start
+
+```shell
+# Set the deployed contract address
+export CONTEST_ADDRESS=0xYourDeployedAddress
+
+# Schedule a contest (default: 1 ETH prize, releases in 10 blocks)
+./script/schedule-contest.sh chronos
+```
+
+### Custom Parameters
+
+You can override default parameters via environment variables:
+
+```shell
+export CONTEST_ADDRESS=0xYourDeployedAddress
+export PRIZE_POOL_WEI=1000000000000000000  # 1 ETH (in wei)
+export RELEASE_BLOCK_OFFSET=50              # Release in 50 blocks
+export SIZE=8                               # 8x8 board
+export TOP_N=5                              # Top 5 winners
+export COMMIT_WINDOW=200                    # 200 blocks commit window
+export REVEAL_WINDOW=300                    # 300 blocks reveal window
+export ENTRY_DEPOSIT_WEI=1000000000000000   # 0.001 ETH deposit (optional)
+
+./script/schedule-contest.sh chronos
+```
+
+### After Scheduling
+
+1. Note the contest ID from the output
+2. Wait for `releaseBlock` to be reached
+3. Call `captureRandomness(contestId)` to open commits
+4. View the contest in the UI at `/contests`
+
+### Example: Full Test Flow
+
+```shell
+# 1. Deploy contract
+./script/deploy.sh chronos
+# Copy address: 0x1234...
+
+# 2. Set address
+export CONTEST_ADDRESS=0x1234...
+
+# 3. Schedule contest
+./script/schedule-contest.sh chronos
+# Contest ID: 0, Release block: 12345
+
+# 4. Wait for release block, then capture randomness
+# (You'll need to call captureRandomness via cast or UI)
+```

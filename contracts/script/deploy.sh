@@ -9,6 +9,11 @@
 
 set -e
 
+# Change to contracts directory (works whether run from root or contracts/)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTRACTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$CONTRACTS_DIR"
+
 NETWORK=${1:-anvil}
 
 if [ -z "$PRIVATE_KEY" ] && [ "$NETWORK" != "anvil" ]; then
@@ -44,7 +49,7 @@ echo "Deploying FirstBloodContest to $NETWORK..."
 CMD="forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest --rpc-url $RPC_URL --broadcast"
 
 if [ "$NETWORK" != "anvil" ]; then
-  CMD="$CMD --skip-simulation"
+  CMD="$CMD --skip-simulation --block-prevrandao 0x0000000000000000000000000000000000000000000000000000000000000000"
 fi
 
 if [ "$NETWORK" == "anvil" ]; then
