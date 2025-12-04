@@ -12,7 +12,7 @@ export const autonomysChronos = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https://auto-evm.chronos.autonomys.xyz'],
+      http: ['https://auto-evm.chronos.autonomys.xyz/ws'],
       webSocket: ['wss://auto-evm.chronos.autonomys.xyz/ws'],
     },
   },
@@ -34,7 +34,7 @@ export const autonomysMainnet = defineChain({
   },
   rpcUrls: {
     default: {
-      http: ['https://auto-evm.mainnet.autonomys.xyz'],
+      http: ['https://auto-evm.mainnet.autonomys.xyz/ws'],
       webSocket: ['wss://auto-evm.mainnet.autonomys.xyz/ws'],
     },
   },
