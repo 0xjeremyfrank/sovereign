@@ -13,7 +13,6 @@ export const ConnectWallet = () => {
     setMounted(true);
   }, []);
 
-  // Show consistent UI during SSR and initial render
   if (!mounted) {
     return (
       <button
@@ -53,4 +52,3 @@ export const ConnectWallet = () => {
     </button>
   );
 };
-
