@@ -81,13 +81,27 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
             <Link
               href="/contests"
-              className="text-slate-500 hover:text-slate-700 transition-colors"
+              className="mt-1.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors"
+              aria-label="Back to Contests"
             >
-              ← Contests
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
             </Link>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
