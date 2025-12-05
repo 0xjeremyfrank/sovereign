@@ -1,8 +1,6 @@
 'use client';
 
-import { useBlockNumber } from 'wagmi';
-
-import { autonomysChronos } from '../lib/wagmi-config';
+import { useBlockNumber, useChainId } from 'wagmi';
 
 type BlockCountdownProps = {
   label: string;
@@ -11,8 +9,9 @@ type BlockCountdownProps = {
 };
 
 export const BlockCountdown = ({ label, targetBlock, status }: BlockCountdownProps) => {
+  const chainId = useChainId();
   const { data: currentBlock } = useBlockNumber({
-    chainId: autonomysChronos.id,
+    chainId,
     watch: true,
   });
 
