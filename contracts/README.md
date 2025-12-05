@@ -39,6 +39,7 @@ anvil
 ### Setup
 
 1. Set your private key as an environment variable:
+
    ```shell
    export PRIVATE_KEY=your_private_key_here
    ```
@@ -46,7 +47,7 @@ anvil
 2. **For Autonomys Testnet (Chronos)**: Get testnet tokens (tAI3) from the [Autonomys faucet](https://develop.autonomys.xyz/evm/faucet)
 
 3. Configure MetaMask or your wallet for Autonomys networks:
-   - **Chronos (Testnet)**: RPC `https://auto-evm.chronos.autonomys.xyz/ws`, Chain ID `490000`, Symbol `tAI3`
+   - **Chronos (Testnet)**: RPC `https://auto-evm.chronos.autonomys.xyz/ws`, Chain ID `8700`, Symbol `tAI3`
    - **Mainnet**: RPC `https://auto-evm.mainnet.autonomys.xyz/ws`, Chain ID `870`, Symbol `AI3`
 
 ### Deploy to Local (Anvil)
@@ -65,11 +66,13 @@ forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
 ### Deploy to Autonomys Testnet (Chronos)
 
 **Using the helper script (recommended):**
+
 ```shell
 ./script/deploy.sh chronos
 ```
 
 **Using forge directly:**
+
 ```shell
 forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
   --rpc-url chronos \
@@ -82,11 +85,13 @@ forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
 ### Deploy to Autonomys Mainnet
 
 **Using the helper script (recommended):**
+
 ```shell
 ./script/deploy.sh autonomys
 ```
 
 **Using forge directly:**
+
 ```shell
 forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest \
   --rpc-url autonomys \
@@ -106,9 +111,72 @@ Autonomys EVM has known gas estimation limitations. If you encounter errors like
 
 1. Copy the deployed address from the console output
 2. Set it in your environment:
+
    ```shell
-   export FIRST_BLOOD_CONTEST_ADDRESS_490000=0x...  # Chronos (testnet)
+   export FIRST_BLOOD_CONTEST_ADDRESS_8700=0x...  # Chronos (testnet)
    export FIRST_BLOOD_CONTEST_ADDRESS_870=0x...      # Autonomys (mainnet)
    ```
 
 3. View your contract on the [Autonomys Block Explorer](https://explorer.autonomys.xyz)
+
+## Scheduling Test Contests
+
+After deploying the contract, you can schedule test contests for UI testing.
+
+### Quick Start
+
+```shell
+# Set the deployed contract address (chain-specific, recommended)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0xYourDeployedAddress
+
+# Or use generic variable (works for any network)
+export CONTEST_ADDRESS=0xYourDeployedAddress
+
+# Schedule a contest (default: 1 ETH prize, releases in 10 blocks)
+./script/schedule-contest.sh chronos
+```
+
+### Custom Parameters
+
+You can override default parameters via environment variables:
+
+```shell
+# Set contract address (chain-specific or generic)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0xYourDeployedAddress
+
+# Customize contest parameters
+export PRIZE_POOL_WEI=1000000000000000000  # 1 ETH (in wei)
+export RELEASE_BLOCK_OFFSET=50              # Release in 50 blocks
+export SIZE=8                               # 8x8 board
+export TOP_N=5                              # Top 5 winners
+export COMMIT_WINDOW=200                    # 200 blocks commit window
+export REVEAL_WINDOW=300                    # 300 blocks reveal window
+export ENTRY_DEPOSIT_WEI=1000000000000000   # 0.001 ETH deposit (optional)
+
+./script/schedule-contest.sh chronos
+```
+
+### After Scheduling
+
+1. Note the contest ID from the output
+2. Wait for `releaseBlock` to be reached
+3. Call `captureRandomness(contestId)` to open commits
+4. View the contest in the UI at `/contests`
+
+### Example: Full Test Flow
+
+```shell
+# 1. Deploy contract
+./script/deploy.sh chronos
+# Copy address: 0x1234...
+
+# 2. Set address (chain-specific, matches deploy output)
+export FIRST_BLOOD_CONTEST_ADDRESS_8700=0x1234...
+
+# 3. Schedule contest
+./script/schedule-contest.sh chronos
+# Contest ID: 0, Release block: 12345
+
+# 4. Wait for release block, then capture randomness
+# (You'll need to call captureRandomness via cast or UI)
+```

@@ -48,6 +48,14 @@ const Home = () => {
               Place one sovereign per row, column, and region. No touching, even diagonally.
             </p>
           </div>
+          <nav>
+            <a
+              href="/contests"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
+            >
+              View Contests
+            </a>
+          </nav>
         </header>
 
         {/* Card */}
