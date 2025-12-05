@@ -161,3 +161,65 @@ export const useContests = () => {
     isLoading: isLoadingNextId || isLoading,
   };
 };
+
+type Commitment = {
+  commitHash: `0x${string}`;
+  committedAt: bigint;
+  depositPaid: bigint;
+};
+
+export const useContestCommitment = (
+  contestId: bigint | undefined,
+  solver: `0x${string}` | undefined,
+) => {
+  const publicClient = usePublicClient();
+  const contractAddress = useMemo(() => getContractAddress(), []);
+
+  const contract = useMemo(() => {
+    if (!publicClient || !contractAddress) return null;
+    return createFirstBloodContestContract(publicClient, CHAIN_ID, {
+      overrides: { [CHAIN_ID]: contractAddress as `0x${string}` },
+    });
+  }, [publicClient, contractAddress]);
+
+  return useReadContract({
+    address: contract?.address,
+    abi: contract?.abi,
+    functionName: 'getCommitment',
+    args: contestId !== undefined && solver ? [contestId, solver] : undefined,
+    chainId: CHAIN_ID,
+    query: {
+      enabled: contestId !== undefined && !!solver && !!contract,
+    },
+  }) as { data: Commitment | undefined; isLoading: boolean; error: Error | null };
+};
+
+type Winner = {
+  solver: `0x${string}`;
+  rewardWei: bigint;
+  revealedAt: bigint;
+  rank: number;
+};
+
+export const useContestWinners = (contestId: bigint | undefined) => {
+  const publicClient = usePublicClient();
+  const contractAddress = useMemo(() => getContractAddress(), []);
+
+  const contract = useMemo(() => {
+    if (!publicClient || !contractAddress) return null;
+    return createFirstBloodContestContract(publicClient, CHAIN_ID, {
+      overrides: { [CHAIN_ID]: contractAddress as `0x${string}` },
+    });
+  }, [publicClient, contractAddress]);
+
+  return useReadContract({
+    address: contract?.address,
+    abi: contract?.abi,
+    functionName: 'getWinners',
+    args: contestId !== undefined ? [contestId] : undefined,
+    chainId: CHAIN_ID,
+    query: {
+      enabled: contestId !== undefined && !!contract,
+    },
+  }) as { data: Winner[] | undefined; isLoading: boolean; error: Error | null };
+};
