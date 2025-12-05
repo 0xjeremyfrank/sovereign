@@ -3,7 +3,7 @@
 import { use } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
-import { useAccount } from 'wagmi';
+import { useAccount, useBlockNumber, useChainId } from 'wagmi';
 
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { ConnectWallet } from '../../../components/connect-wallet';
@@ -17,6 +17,8 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const contestId = BigInt(id);
   const { address, isConnected } = useAccount();
 
+  const chainId = useChainId();
+  const { data: currentBlock } = useBlockNumber({ chainId, watch: true });
   const { data: contestData, isLoading, error } = useContest(contestId);
   const { data: commitment } = useContestCommitment(contestId, address);
   const { data: winners } = useContestWinners(contestId);
@@ -113,7 +115,19 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             {/* Randomness Card */}
             <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
               <h2 className="text-lg font-semibold mb-4">Randomness</h2>
-              {state.state === 0 ? (
+              {state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 text-amber-600">
+                    <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
+                    <span>Ready for capture</span>
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    Release block reached. Call{' '}
+                    <code className="bg-slate-100 px-1 rounded">captureRandomness({id})</code> to
+                    start commits.
+                  </p>
+                </div>
+              ) : state.state === 0 ? (
                 <div className="flex items-center gap-3 text-yellow-600">
                   <div className="animate-pulse h-3 w-3 rounded-full bg-yellow-500" />
                   <span>Awaiting release block ({params_.releaseBlock.toString()})</span>
