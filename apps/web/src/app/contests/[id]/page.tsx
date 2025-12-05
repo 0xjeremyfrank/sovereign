@@ -3,7 +3,7 @@
 import { use } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
-import { useAccount, useBlockNumber, useChainId } from 'wagmi';
+import { useConnection, useBlockNumber, useChainId } from 'wagmi';
 
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { ConnectWallet } from '../../../components/connect-wallet';
@@ -15,7 +15,8 @@ export const dynamic = 'force-dynamic';
 const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const contestId = BigInt(id);
-  const { address, isConnected } = useAccount();
+  const { address, status } = useConnection();
+  const isConnected = status === 'connected';
 
   const chainId = useChainId();
   const { data: currentBlock } = useBlockNumber({ chainId, watch: true });

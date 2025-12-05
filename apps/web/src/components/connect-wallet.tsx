@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useConnection, useConnect, useDisconnect } from 'wagmi';
 
 export const ConnectWallet = () => {
   const [mounted, setMounted] = useState(false);
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
+  const { address, status } = useConnection();
+  const isConnected = status === 'connected';
+  const { connectors, connect, status: connectStatus } = useConnect();
+  const isPending = connectStatus === 'pending';
   const { disconnect } = useDisconnect();
 
   useEffect(() => {
