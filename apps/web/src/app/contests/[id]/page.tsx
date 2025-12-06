@@ -3,7 +3,7 @@
 import { use } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection, useBlockNumber, useChainId } from 'wagmi';
 
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { ConnectWallet } from '../../../components/connect-wallet';
@@ -15,8 +15,11 @@ export const dynamic = 'force-dynamic';
 const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const contestId = BigInt(id);
-  const { address, isConnected } = useAccount();
+  const { address, status } = useConnection();
+  const isConnected = status === 'connected';
 
+  const chainId = useChainId();
+  const { data: currentBlock } = useBlockNumber({ chainId, watch: true });
   const { data: contestData, isLoading, error } = useContest(contestId);
   const { data: commitment } = useContestCommitment(contestId, address);
   const { data: winners } = useContestWinners(contestId);
@@ -53,14 +56,27 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
       <div className="max-w-4xl mx-auto px-4 py-10">
-        {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
             <Link
               href="/contests"
-              className="text-slate-500 hover:text-slate-700 transition-colors"
+              className="mt-1.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors"
+              aria-label="Back to Contests"
             >
-              ← Back
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
             </Link>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Contest #{id}</h1>
@@ -113,7 +129,19 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             {/* Randomness Card */}
             <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
               <h2 className="text-lg font-semibold mb-4">Randomness</h2>
-              {state.state === 0 ? (
+              {state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 text-amber-600">
+                    <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
+                    <span>Ready for capture</span>
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    Release block reached. Call{' '}
+                    <code className="bg-slate-100 px-1 rounded">captureRandomness({id})</code> to
+                    start commits.
+                  </p>
+                </div>
+              ) : state.state === 0 ? (
                 <div className="flex items-center gap-3 text-yellow-600">
                   <div className="animate-pulse h-3 w-3 rounded-full bg-yellow-500" />
                   <span>Awaiting release block ({params_.releaseBlock.toString()})</span>

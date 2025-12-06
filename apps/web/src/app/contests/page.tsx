@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useContests } from '../../hooks/use-contests';
 import { ContestCard } from '../../components/contest-card';
 import { ConnectWallet } from '../../components/connect-wallet';
@@ -17,7 +19,15 @@ const ContestsPage = () => {
             <h1 className="text-4xl font-bold tracking-tight">Contests</h1>
             <p className="text-slate-600 mt-2">View all First Blood contests</p>
           </div>
-          <ConnectWallet />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin"
+              className="px-3 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              Admin
+            </Link>
+            <ConnectWallet />
+          </div>
         </header>
 
         {isLoading ? (
