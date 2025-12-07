@@ -281,6 +281,22 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               </div>
             </div>
 
+            {/* Play Puzzle Card */}
+            {state.state >= 2 && (
+              <div className="rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 shadow-lg ring-1 ring-amber-200 p-6">
+                <h2 className="text-lg font-semibold mb-2 text-amber-900">Play Puzzle</h2>
+                <p className="text-sm text-amber-800 mb-4">
+                  Solve the {params_.size}×{params_.size} puzzle to compete for the prize.
+                </p>
+                <Link
+                  href={`/contests/${id}/play`}
+                  className="block w-full px-4 py-3 bg-amber-500 text-white rounded-lg font-medium text-center hover:bg-amber-600 transition-colors shadow-sm"
+                >
+                  Play Puzzle →
+                </Link>
+              </div>
+            )}
+
             {/* Your Status Card */}
             <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
               <h2 className="text-lg font-semibold mb-4">Your Status</h2>
@@ -293,12 +309,9 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     <span>Not committed</span>
                   </div>
                   {state.state === 2 && (
-                    <button
-                      disabled
-                      className="w-full px-4 py-3 bg-amber-500 text-white rounded-lg font-medium opacity-50 cursor-not-allowed"
-                    >
-                      Commit Solution (Coming Soon)
-                    </button>
+                    <p className="text-sm text-slate-500">
+                      Solve the puzzle first, then commit your solution.
+                    </p>
                   )}
                 </div>
               ) : (

@@ -106,8 +106,17 @@ export const ContestCard = ({ contest }: { contest: Contest }) => {
             </p>
           </div>
 
-          <div className="pt-2 border-t border-slate-200">
+          <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
             <p className="text-xs text-slate-500">Engine: {contest.params.engineVersion}</p>
+            {(contest.state.state === 2 || contest.state.state === 3) && (
+              <Link
+                href={`/contests/${contest.contestId.toString()}/play`}
+                className="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Play →
+              </Link>
+            )}
           </div>
         </div>
       </div>
