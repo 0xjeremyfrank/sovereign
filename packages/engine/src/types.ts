@@ -13,7 +13,7 @@ export interface BoardState {
   history: CellState[][]; // stack of previous cell arrays for undo
 }
 
-export type RuleType = 'column' | 'region' | 'adjacent' | 'contiguous';
+export type RuleType = 'row' | 'column' | 'region' | 'adjacent' | 'contiguous';
 
 export interface ValidationViolation {
   rule: RuleType;

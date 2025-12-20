@@ -4,6 +4,7 @@ const linear = (r: number, c: number, size: number) => r * size + c;
 
 export const validateBoard = (board: BoardState, region: RegionMap): ValidationResult => {
   const size = board.size;
+  const rowsToCells = new Map<number, number[]>();
   const colsToCells = new Map<number, number[]>();
   const regionToCells = new Map<number, number[]>();
   const occupied = new Set<number>();
@@ -21,6 +22,11 @@ export const validateBoard = (board: BoardState, region: RegionMap): ValidationR
         positions.push([r, c]);
         occupied.add(idx);
 
+        // track row cells
+        const rowCells = rowsToCells.get(r) ?? [];
+        rowCells.push(idx);
+        rowsToCells.set(r, rowCells);
+
         // track column cells
         const colCells = colsToCells.get(c) ?? [];
         colCells.push(idx);
@@ -32,6 +38,13 @@ export const validateBoard = (board: BoardState, region: RegionMap): ValidationR
         regCells.push(idx);
         regionToCells.set(regId, regCells);
       }
+    }
+  }
+
+  // row uniqueness: mark all cells in conflicting rows
+  for (const [, cells] of rowsToCells) {
+    if (cells.length > 1) {
+      violations.push({ rule: 'row', cells: Array.from(new Set(cells)) });
     }
   }
 

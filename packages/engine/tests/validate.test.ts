@@ -22,6 +22,17 @@ describe('validate', () => {
     expect(res.isValid).toBe(true);
   });
 
+  it('flags row conflicts', () => {
+    const size = 3;
+    let board = createEmptyBoard(size);
+    board = placeSovereign(board, 0, 0);
+    board = placeSovereign(board, 0, 2); // same row, different column
+    const region = makeRegion(size);
+    const res = validateBoard(board, region);
+    expect(res.isValid).toBe(false);
+    expect(res.violations.some((v) => v.rule === 'row')).toBe(true);
+  });
+
   it('flags column conflicts', () => {
     const size = 3;
     let board = createEmptyBoard(size);
