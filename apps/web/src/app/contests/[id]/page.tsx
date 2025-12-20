@@ -9,6 +9,7 @@ import { useContest, useContestCommitment, useContestWinners } from '../../../ho
 import { ConnectWallet } from '../../../components/connect-wallet';
 import { ContestTimeline } from '../../../components/contest-timeline';
 import { BlockCountdown } from '../../../components/block-countdown';
+import { CommitSolutionForm } from '../../../components/commit-solution-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -296,6 +297,19 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </Link>
               </div>
             )}
+
+            {/* Commit Solution Form */}
+            {state.state >= 2 &&
+              state.globalSeed !==
+                '0x0000000000000000000000000000000000000000000000000000000000000000' && (
+                <CommitSolutionForm
+                  contestId={contestId}
+                  entryDepositWei={params_.entryDepositWei}
+                  contestState={state.state}
+                  globalSeed={state.globalSeed}
+                  size={params_.size}
+                />
+              )}
 
             {/* Your Status Card */}
             <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">

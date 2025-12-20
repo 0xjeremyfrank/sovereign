@@ -9,6 +9,7 @@ export default [
       globals: {
         MouseEvent: 'readonly',
         TouchEvent: 'readonly',
+        Blob: 'readonly',
       },
     },
     rules: {
