@@ -1,12 +1,13 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
 import { useBlockNumber, useChainId } from 'wagmi';
 
 import { useContest } from '../../../../hooks/use-contests';
 import { useBoard } from '../../../../hooks/use-board';
+import { useSolvedBoardStorage } from '../../../../hooks/use-solved-board-storage';
 import { ConnectWallet } from '../../../../components/connect-wallet';
 import { Grid } from '../../../../components/grid';
 import { Legend } from '../../../../components/legend';
@@ -195,6 +196,28 @@ const PuzzleView = ({
   // Generate puzzle using the contest's globalSeed
   const { board, regionMap, validation, isGenerating, onCycleCell, onMarkCell, onClear, onUndo } =
     useBoard(contestState.globalSeed, contestParams.size);
+
+  const { storeSolvedBoard } = useSolvedBoardStorage();
+  const contestIdBigInt = BigInt(contestId);
+  const wasSolvedRef = useRef(false);
+
+  // Save solved board to localStorage when puzzle is solved
+  useEffect(() => {
+    const isPuzzleSolved = validation.isComplete && validation.isValid;
+    if (isPuzzleSolved && !wasSolvedRef.current) {
+      wasSolvedRef.current = true;
+      storeSolvedBoard(contestIdBigInt, board, contestParams.size);
+    } else if (!isPuzzleSolved) {
+      wasSolvedRef.current = false;
+    }
+  }, [
+    validation.isComplete,
+    validation.isValid,
+    board,
+    contestIdBigInt,
+    contestParams.size,
+    storeSolvedBoard,
+  ]);
 
   const prizePool = formatEther(contestParams.prizePoolWei);
   const entryDeposit =
