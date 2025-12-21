@@ -13,6 +13,7 @@ import {
 import { firstBloodContestAbi } from '@sovereign/onchain';
 import { ConnectWallet } from '../../components/connect-wallet';
 import { useContests } from '../../hooks/use-contests';
+import { useContractAddress } from '../../hooks/use-contract-address';
 
 const extractErrorReason = (error: Error): string => {
   const message = error.message || '';
@@ -61,21 +62,10 @@ const extractErrorReason = (error: Error): string => {
   return firstLine.length > 100 ? firstLine.slice(0, 100) + '...' : firstLine;
 };
 
-const getContractAddress = (chainId: number): `0x${string}` | null => {
-  if (chainId === 8700) {
-    return (process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_8700 as `0x${string}`) ?? null;
-  } else if (chainId === 870) {
-    return (process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_870 as `0x${string}`) ?? null;
-  } else if (chainId === 31337) {
-    return (process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337 as `0x${string}`) ?? null;
-  }
-  return null;
-};
-
 const AdminPage = () => {
   const { status, chainId } = useConnection();
   const isConnected = status === 'connected';
-  const contractAddress = chainId ? getContractAddress(chainId) : null;
+  const contractAddress = useContractAddress();
   const { contests } = useContests();
 
   return (

@@ -3,9 +3,17 @@
 import { use } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
-import { useConnection, useBlockNumber, useChainId } from 'wagmi';
+import {
+  useConnection,
+  useBlockNumber,
+  useChainId,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 
+import { firstBloodContestAbi } from '@sovereign/onchain';
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
+import { useContractAddress } from '../../../hooks/use-contract-address';
 import { ConnectWallet } from '../../../components/connect-wallet';
 import { ContestTimeline } from '../../../components/contest-timeline';
 import { BlockCountdown } from '../../../components/block-countdown';
@@ -24,6 +32,48 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { data: contestData, isLoading, error } = useContest(contestId);
   const { data: commitment } = useContestCommitment(contestId, address);
   const { data: winners } = useContestWinners(contestId);
+
+  const contractAddress = useContractAddress();
+  const {
+    writeContract: writeCaptureRandomness,
+    data: captureHash,
+    isPending: isCapturePending,
+    error: captureError,
+  } = useWriteContract();
+  const { isLoading: isCaptureConfirming, isSuccess: isCaptureSuccess } =
+    useWaitForTransactionReceipt({
+      hash: captureHash,
+    });
+
+  const {
+    writeContract: writeCloseContest,
+    data: closeHash,
+    isPending: isClosePending,
+    error: closeError,
+  } = useWriteContract();
+  const { isLoading: isCloseConfirming, isSuccess: isCloseSuccess } = useWaitForTransactionReceipt({
+    hash: closeHash,
+  });
+
+  const handleCaptureRandomness = () => {
+    if (!contractAddress) return;
+    writeCaptureRandomness({
+      address: contractAddress,
+      abi: firstBloodContestAbi,
+      functionName: 'captureRandomness',
+      args: [contestId],
+    });
+  };
+
+  const handleCloseContest = () => {
+    if (!contractAddress) return;
+    writeCloseContest({
+      address: contractAddress,
+      abi: firstBloodContestAbi,
+      functionName: 'closeContest',
+      args: [contestId],
+    });
+  };
 
   if (isLoading) {
     return (
@@ -53,6 +103,20 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const hasCommitted = commitment && commitment.committedAt > 0n;
   const commitBufferEndsAt = hasCommitted ? commitment.committedAt + params_.commitBuffer : 0n;
+
+  // Check if it's too late to capture randomness (blockhash only available for last 256 blocks)
+  const isTooLateToCapture = currentBlock && currentBlock > params_.releaseBlock + 256n;
+  const canCaptureRandomness =
+    state.state === 0 &&
+    currentBlock &&
+    currentBlock >= params_.releaseBlock &&
+    !isTooLateToCapture;
+
+  // Check if contest can be closed
+  const canCloseContest =
+    (state.state === 2 || state.state === 3) &&
+    currentBlock &&
+    (state.winnerCount >= params_.topN || currentBlock >= state.revealWindowEndsAt);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
@@ -131,16 +195,80 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
               <h2 className="text-lg font-semibold mb-4">Randomness</h2>
               {state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 text-amber-600">
-                    <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
-                    <span>Ready for capture</span>
-                  </div>
-                  <p className="text-sm text-slate-500">
-                    Release block reached. Call{' '}
-                    <code className="bg-slate-100 px-1 rounded">captureRandomness({id})</code> to
-                    start commits.
-                  </p>
+                <div className="space-y-3">
+                  {isTooLateToCapture ? (
+                    <>
+                      <div className="flex items-center gap-3 text-red-600">
+                        <div className="h-3 w-3 rounded-full bg-red-500" />
+                        <span>Too late to capture</span>
+                      </div>
+                      <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                        <p className="text-sm font-medium text-red-800 mb-1">
+                          Blockhash Unavailable
+                        </p>
+                        <p className="text-sm text-red-700">
+                          More than 256 blocks have passed since the release block (
+                          {params_.releaseBlock.toString()}). The blockhash is no longer available,
+                          so randomness cannot be captured. The contest cannot proceed.
+                        </p>
+                        {currentBlock && (
+                          <p className="text-xs text-red-600 mt-2">
+                            Current block: {currentBlock.toString()} (Release block:{' '}
+                            {params_.releaseBlock.toString()}, Difference:{' '}
+                            {(currentBlock - params_.releaseBlock).toString()} blocks)
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 text-amber-600">
+                        <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
+                        <span>Ready for capture</span>
+                      </div>
+                      <p className="text-sm text-slate-500">
+                        Release block reached. Call{' '}
+                        <code className="bg-slate-100 px-1 rounded">captureRandomness({id})</code>{' '}
+                        to start commits.
+                      </p>
+                      {currentBlock && (
+                        <p className="text-xs text-slate-500">
+                          Must be called within 256 blocks of release block. Blocks remaining:{' '}
+                          {256n - (currentBlock - params_.releaseBlock)}.
+                        </p>
+                      )}
+                      {isConnected && contractAddress && (
+                        <div className="space-y-2">
+                          <button
+                            onClick={handleCaptureRandomness}
+                            disabled={
+                              isCapturePending || isCaptureConfirming || !canCaptureRandomness
+                            }
+                            className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {isCapturePending
+                              ? 'Confirming...'
+                              : isCaptureConfirming
+                                ? 'Processing...'
+                                : 'Capture Randomness'}
+                          </button>
+                          {isCaptureSuccess && (
+                            <p className="text-sm text-green-600">
+                              Randomness captured successfully!
+                            </p>
+                          )}
+                          {captureError && (
+                            <div className="p-2 bg-red-50 rounded-lg">
+                              <p className="text-xs font-medium text-red-700">Transaction Failed</p>
+                              <p className="text-xs text-red-600 mt-1 font-mono break-all">
+                                {captureError.message}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : state.state === 0 ? (
                 <div className="flex items-center gap-3 text-yellow-600">
@@ -355,6 +483,49 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </div>
               )}
             </div>
+
+            {/* Contest Actions Card */}
+            {canCloseContest && (
+              <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+                <h2 className="text-lg font-semibold mb-4">Contest Actions</h2>
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-600">
+                    {state.winnerCount >= params_.topN
+                      ? 'All winners have been found. Close the contest to finalize.'
+                      : 'Reveal window has ended. Close the contest to finalize.'}
+                  </p>
+                  {isConnected && contractAddress && (
+                    <div className="space-y-2">
+                      <button
+                        onClick={handleCloseContest}
+                        disabled={isClosePending || isCloseConfirming}
+                        className="w-full px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isClosePending
+                          ? 'Confirming...'
+                          : isCloseConfirming
+                            ? 'Processing...'
+                            : 'Close Contest'}
+                      </button>
+                      {isCloseSuccess && (
+                        <p className="text-sm text-green-600">Contest closed successfully!</p>
+                      )}
+                      {closeError && (
+                        <div className="p-2 bg-red-50 rounded-lg">
+                          <p className="text-xs font-medium text-red-700">Transaction Failed</p>
+                          <p className="text-xs text-red-600 mt-1 font-mono break-all">
+                            {closeError.message}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!isConnected && (
+                    <p className="text-sm text-slate-500">Connect wallet to close contest</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Forfeited Deposits */}
             {state.forfeitedDepositsWei > 0n && (

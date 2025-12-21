@@ -3,28 +3,7 @@ import { usePublicClient } from 'wagmi';
 import { useMemo } from 'react';
 import type { Abi } from 'viem';
 import { createFirstBloodContestContract } from '@sovereign/onchain';
-
-const getContractAddress = (chainId: number): string | null => {
-  let address: string | undefined;
-
-  if (chainId === 8700) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_8700;
-  } else if (chainId === 870) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_870;
-  } else if (chainId === 31337) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337;
-  }
-
-  if (!address || address === '0x0000000000000000000000000000000000000000') {
-    const envKey = `NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_${chainId}`;
-    console.warn(
-      `[use-contests] Contract address not found for chain ${chainId}. Set ${envKey} in .env.local and restart dev server`,
-    );
-    return null;
-  }
-
-  return address;
-};
+import { useContractAddress } from './use-contract-address';
 
 type ContestParams = {
   generatorCodeCid: string;
@@ -55,7 +34,7 @@ type ContestStateData = {
 export const useNextContestId = () => {
   const chainId = useChainId();
   const publicClient = usePublicClient();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const contract = useMemo(() => {
     if (!publicClient || !contractAddress) return null;
@@ -78,7 +57,7 @@ export const useNextContestId = () => {
 export const useContest = (contestId: bigint | undefined) => {
   const chainId = useChainId();
   const publicClient = usePublicClient();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const contract = useMemo(() => {
     if (!publicClient || !contractAddress) return null;
@@ -113,7 +92,7 @@ export const useContests = () => {
   }, [nextContestId]);
 
   const publicClient = usePublicClient();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const contract = useMemo(() => {
     if (!publicClient || !contractAddress) return null;
@@ -174,7 +153,7 @@ export const useContestCommitment = (
 ) => {
   const chainId = useChainId();
   const publicClient = usePublicClient();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const contract = useMemo(() => {
     if (!publicClient || !contractAddress) return null;
@@ -205,7 +184,7 @@ type Winner = {
 export const useContestWinners = (contestId: bigint | undefined) => {
   const chainId = useChainId();
   const publicClient = usePublicClient();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const contract = useMemo(() => {
     if (!publicClient || !contractAddress) return null;

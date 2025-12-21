@@ -1,28 +1,10 @@
 import { useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
-import { useMemo } from 'react';
 import { firstBloodContestAbi } from '@sovereign/onchain';
-
-const getContractAddress = (chainId: number): string | null => {
-  let address: string | undefined;
-
-  if (chainId === 8700) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_8700;
-  } else if (chainId === 870) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_870;
-  } else if (chainId === 31337) {
-    address = process.env.NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337;
-  }
-
-  if (!address || address === '0x0000000000000000000000000000000000000000') {
-    return null;
-  }
-
-  return address;
-};
+import { useContractAddress } from './use-contract-address';
 
 export const useCommitSolution = () => {
   const chainId = useChainId();
-  const contractAddress = useMemo(() => getContractAddress(chainId), [chainId]);
+  const contractAddress = useContractAddress();
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
