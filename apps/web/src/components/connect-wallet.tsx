@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useConnection, useConnect, useDisconnect, useSwitchChain, useConnectors } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
 
-const SUPPORTED_CHAIN_ID = 8700; // Autonomys Chronos
-const SUPPORTED_CHAIN_NAME = 'Autonomys Chronos';
+const SUPPORTED_CHAIN_ID = sepolia.id; // 11155111
+const SUPPORTED_CHAIN_NAME = 'Sepolia';
 
 export const ConnectWallet = () => {
   const [mounted, setMounted] = useState(false);
