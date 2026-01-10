@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IconCrown } from './icons';
@@ -10,7 +11,7 @@ const classNames = (...classes: (string | false | undefined)[]) =>
 
 interface NavLinkProps {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
   isActive: boolean;
 }
 
