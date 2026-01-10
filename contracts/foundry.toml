@@ -2,12 +2,17 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-evm_version = "london"
+evm_version = "paris"
 
 # Network configurations
 [rpc_endpoints]
 anvil = "http://localhost:8545"
-chronos = "https://auto-evm.chronos.autonomys.xyz/ws"
-autonomys = "https://auto-evm.mainnet.autonomys.xyz/ws"
+sepolia = "${SEPOLIA_RPC_URL}"
+base = "${BASE_RPC_URL}"
+
+# Etherscan API keys for contract verification
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+base = { key = "${BASESCAN_API_KEY}", url = "https://api.basescan.org/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
