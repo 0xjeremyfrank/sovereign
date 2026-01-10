@@ -2,10 +2,12 @@
 pragma solidity ^0.8.30;
 
 import {ReentrancyGuard} from "openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 /// @title FirstBloodContest
 /// @notice Single contract managing all contests keyed by contestId
-contract FirstBloodContest is ReentrancyGuard {
+contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
     // ============ Types ============
 
     enum ContestState {
@@ -66,6 +68,23 @@ contract FirstBloodContest is ReentrancyGuard {
 
     uint256 public nextContestId;
 
+    // ============ VRF Configuration ============
+
+    /// @notice Chainlink VRF subscription ID
+    uint256 public s_subscriptionId;
+
+    /// @notice Key hash for VRF (gas lane)
+    bytes32 public s_keyHash;
+
+    /// @notice Callback gas limit for VRF fulfillment
+    uint32 public s_callbackGasLimit;
+
+    /// @notice Number of confirmations before VRF response
+    uint16 public s_requestConfirmations;
+
+    /// @notice Mapping from VRF requestId to contestId (stores contestId + 1, 0 means not set)
+    mapping(uint256 => uint256) public s_vrfRequestToContest;
+
     // ============ Errors ============
 
     error NotSponsor(uint256 contestId, address caller);
@@ -95,6 +114,8 @@ contract FirstBloodContest is ReentrancyGuard {
     error ContestNotClosed(uint256 contestId, ContestState state);
     error NoRemainingPrize(uint256 contestId);
     error WithdrawalFailed(address recipient, uint256 amount);
+    error VRFRequestNotFound(uint256 requestId);
+    error ContestNotRandomnessPending(uint256 contestId, ContestState state);
 
     // ============ Events ============
 
@@ -109,7 +130,8 @@ contract FirstBloodContest is ReentrancyGuard {
         uint256 entryDepositWei
     );
 
-    event RandomnessCaptured(uint256 indexed contestId, bytes32 globalSeedSource);
+    event RandomnessRequested(uint256 indexed contestId, uint256 indexed vrfRequestId);
+    event RandomnessFulfilled(uint256 indexed contestId, uint256 indexed vrfRequestId, bytes32 globalSeed);
 
     event PuzzlePublished(uint256 indexed contestId, bytes32 puzzleHash, string regionMapCid);
 
@@ -132,6 +154,27 @@ contract FirstBloodContest is ReentrancyGuard {
             revert NotSponsor(contestId, msg.sender);
         }
         _;
+    }
+
+    // ============ Constructor ============
+
+    /// @notice Initialize the contract with VRF configuration
+    /// @param vrfCoordinator Address of the VRF Coordinator
+    /// @param subscriptionId VRF subscription ID
+    /// @param keyHash VRF key hash (gas lane)
+    /// @param callbackGasLimit Gas limit for VRF callback
+    /// @param requestConfirmations Number of confirmations for VRF
+    constructor(
+        address vrfCoordinator,
+        uint256 subscriptionId,
+        bytes32 keyHash,
+        uint32 callbackGasLimit,
+        uint16 requestConfirmations
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        s_subscriptionId = subscriptionId;
+        s_keyHash = keyHash;
+        s_callbackGasLimit = callbackGasLimit;
+        s_requestConfirmations = requestConfirmations;
     }
 
     // ============ Core Functions ============
@@ -173,27 +216,64 @@ contract FirstBloodContest is ReentrancyGuard {
         );
     }
 
-    /// @notice Capture randomness at releaseBlock (MVP: derive from blockhash)
-    /// @dev TODO: Replace with Autonomys Proof of Time randomness provider
-    function captureRandomness(uint256 contestId) external {
+    /// @notice Request randomness from Chainlink VRF
+    /// @dev Call this after releaseBlock to initiate VRF request
+    /// @param contestId The contest to request randomness for
+    /// @return requestId The VRF request ID
+    function requestRandomness(uint256 contestId) external returns (uint256 requestId) {
         ContestStateData storage state = contestStates[contestId];
         ContestParams memory params = contests[contestId];
 
         if (state.state != ContestState.Scheduled) revert NotScheduled(contestId);
         if (block.number < params.releaseBlock) revert ReleaseBlockNotReached(params.releaseBlock, block.number);
 
-        // MVP: derive seed from blockhash
-        // TODO: Replace with Autonomys Proof of Time randomness
-        bytes32 seedSource = blockhash(params.releaseBlock);
-        if (seedSource == bytes32(0)) revert BlockhashUnavailable(params.releaseBlock);
+        // Transition to RandomnessPending
+        state.state = ContestState.RandomnessPending;
 
-        state.globalSeed = keccak256(abi.encodePacked(seedSource, contestId));
+        // Request randomness from Chainlink VRF
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: s_requestConfirmations,
+            callbackGasLimit: s_callbackGasLimit,
+            numWords: 1,
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+        });
+
+        requestId = s_vrfCoordinator.requestRandomWords(request);
+        s_vrfRequestToContest[requestId] = contestId + 1; // Store contestId + 1 so 0 means "not set"
+
+        emit RandomnessRequested(contestId, requestId);
+    }
+
+    /// @notice Callback from Chainlink VRF with random words
+    /// @dev Only callable by the VRF Coordinator
+    /// @param requestId The VRF request ID
+    /// @param randomWords Array of random words (we only use the first one)
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+        uint256 storedValue = s_vrfRequestToContest[requestId];
+        if (storedValue == 0) {
+            revert VRFRequestNotFound(requestId);
+        }
+        uint256 contestId = storedValue - 1; // Retrieve actual contestId
+
+        ContestStateData storage state = contestStates[contestId];
+        ContestParams memory params = contests[contestId];
+
+        if (state.state != ContestState.RandomnessPending) {
+            revert ContestNotRandomnessPending(contestId, state.state);
+        }
+
+        // Use the random word to derive the global seed
+        bytes32 globalSeed = keccak256(abi.encodePacked(randomWords[0], contestId));
+
+        state.globalSeed = globalSeed;
         state.randomnessCapturedAt = block.number;
         state.commitWindowEndsAt = block.number + params.commitWindow;
         state.revealWindowEndsAt = state.commitWindowEndsAt + params.revealWindow;
         state.state = ContestState.CommitOpen;
 
-        emit RandomnessCaptured(contestId, seedSource);
+        emit RandomnessFulfilled(contestId, requestId, globalSeed);
     }
 
     /// @notice Commit a solution hash
