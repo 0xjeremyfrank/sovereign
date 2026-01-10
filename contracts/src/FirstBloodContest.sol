@@ -82,7 +82,8 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
     /// @notice Number of confirmations before VRF response
     uint16 public s_requestConfirmations;
 
-    /// @notice Mapping from VRF requestId to contestId (stores contestId + 1, 0 means not set)
+    /// @notice Mapping from VRF requestId to contestId
+    /// @dev Stores contestId + 1 so that 0 can be used as a sentinel for "not set" without conflicting with contest ID 0
     mapping(uint256 => uint256) public s_vrfRequestToContest;
 
     // ============ Errors ============
