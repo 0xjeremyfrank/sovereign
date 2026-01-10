@@ -3,9 +3,10 @@
   "network": "sepolia",
   "contracts": {
     "FirstBloodContest": {
-      "address": "0xF8f3F757B2B42E0BaE37535DB1130E7d0aC13e39",
-      "deployedAt": "2025-01-09",
-      "txHash": "see broadcast/DeployFirstBloodContest.s.sol/11155111/run-latest.json"
+      "address": "0x2772e120405f700E3DDc87F1B51E8103B3439341",
+      "deployedAt": "2025-01-10",
+      "txHash": "see broadcast/DeployFirstBloodContest.s.sol/11155111/run-latest.json",
+      "vrfSubscriptionId": "43019723357921066459460577033800986437233524510110385574345937063381506788454"
     }
   }
 }
