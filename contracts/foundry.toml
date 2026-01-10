@@ -4,6 +4,11 @@ out = "out"
 libs = ["lib"]
 evm_version = "paris"
 
+remappings = [
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/",
+    "@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/",
+]
+
 # Network configurations
 [rpc_endpoints]
 anvil = "http://localhost:8545"

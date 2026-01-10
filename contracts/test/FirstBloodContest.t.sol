@@ -3,9 +3,11 @@ pragma solidity ^0.8.30;
 
 import {Test} from "forge-std/Test.sol";
 import {FirstBloodContest} from "../src/FirstBloodContest.sol";
+import {MockVRFCoordinatorV2Plus} from "./mocks/MockVRFCoordinatorV2Plus.sol";
 
 contract FirstBloodContestTest is Test {
     FirstBloodContest public contest;
+    MockVRFCoordinatorV2Plus public vrfCoordinator;
 
     address public sponsor = address(0x1);
     address public solver1 = address(0x2);
@@ -18,8 +20,25 @@ contract FirstBloodContestTest is Test {
     uint256 public constant COMMIT_BUFFER = 5;
     uint256 public constant REVEAL_WINDOW = 200;
 
+    // VRF configuration
+    uint256 public constant VRF_SUBSCRIPTION_ID = 1;
+    bytes32 public constant VRF_KEY_HASH = keccak256("test_key_hash");
+    uint32 public constant VRF_CALLBACK_GAS_LIMIT = 100000;
+    uint16 public constant VRF_REQUEST_CONFIRMATIONS = 3;
+
     function setUp() public {
-        contest = new FirstBloodContest();
+        // Deploy mock VRF Coordinator
+        vrfCoordinator = new MockVRFCoordinatorV2Plus();
+
+        // Deploy FirstBloodContest with VRF config
+        contest = new FirstBloodContest(
+            address(vrfCoordinator),
+            VRF_SUBSCRIPTION_ID,
+            VRF_KEY_HASH,
+            VRF_CALLBACK_GAS_LIMIT,
+            VRF_REQUEST_CONFIRMATIONS
+        );
+
         vm.deal(sponsor, 100 ether);
         vm.deal(solver1, 10 ether);
         vm.deal(solver2, 10 ether);
@@ -53,12 +72,17 @@ contract FirstBloodContestTest is Test {
         return keccak256(abi.encodePacked(contestId, solver, solutionHash, salt));
     }
 
-    /// @notice Helper to advance to release block and capture randomness
-    /// @dev Must advance past releaseBlock to access blockhash
+    /// @notice Helper to advance to release block and request/fulfill VRF randomness
+    /// @dev Requests VRF randomness and immediately fulfills it with the mock coordinator
     function advanceAndCaptureRandomness(uint256 contestId, uint256 releaseBlock) internal {
         vm.roll(releaseBlock);
-        vm.roll(releaseBlock + 1); // Advance one more to access blockhash
-        contest.captureRandomness(contestId);
+        vm.roll(releaseBlock + 1); // Advance one more for safety
+
+        // Request randomness
+        uint256 requestId = contest.requestRandomness(contestId);
+
+        // Fulfill with mock coordinator
+        vrfCoordinator.fulfillRandomWordsWithDefault(requestId);
     }
 
     // ============ Schedule Contest Tests ============
@@ -156,9 +180,9 @@ contract FirstBloodContestTest is Test {
         assertEq(contestId2, 1);
     }
 
-    // ============ Capture Randomness Tests ============
+    // ============ VRF Randomness Tests ============
 
-    function test_CaptureRandomness_Success() public {
+    function test_RequestRandomness_Success() public {
         uint256 releaseBlock = block.number + 5;
         FirstBloodContest.ContestParams memory params = createContestParams(releaseBlock);
         params.sponsor = sponsor;
@@ -166,20 +190,32 @@ contract FirstBloodContestTest is Test {
         vm.prank(sponsor);
         uint256 contestId = contest.scheduleContest{value: PRIZE_POOL}(params);
 
-        // Advance to release block, then one more to access blockhash
+        // Advance to release block
         vm.roll(releaseBlock);
         vm.roll(releaseBlock + 1);
 
-        // Store blockhash for verification (now accessible since we're past releaseBlock)
-        bytes32 expectedSeedSource = blockhash(releaseBlock);
-        bytes32 expectedGlobalSeed = keccak256(abi.encodePacked(expectedSeedSource, contestId));
+        // Request randomness
+        vm.expectEmit(true, true, false, false);
+        emit FirstBloodContest.RandomnessRequested(contestId, 1); // requestId will be 1
 
-        vm.expectEmit(true, false, false, true);
-        emit FirstBloodContest.RandomnessCaptured(contestId, expectedSeedSource);
+        uint256 requestId = contest.requestRandomness(contestId);
+        assertEq(requestId, 1);
 
-        contest.captureRandomness(contestId);
-
+        // Check state is RandomnessPending
         (, FirstBloodContest.ContestStateData memory state) = contest.getContest(contestId);
+        assertEq(uint256(state.state), uint256(FirstBloodContest.ContestState.RandomnessPending));
+
+        // Fulfill randomness
+        uint256 randomWord = 12345;
+        bytes32 expectedGlobalSeed = keccak256(abi.encodePacked(randomWord, contestId));
+
+        vm.expectEmit(true, true, false, true);
+        emit FirstBloodContest.RandomnessFulfilled(contestId, requestId, expectedGlobalSeed);
+
+        vrfCoordinator.fulfillRandomWords(requestId, randomWord);
+
+        // Check final state
+        (, state) = contest.getContest(contestId);
         assertEq(state.globalSeed, expectedGlobalSeed);
         assertEq(uint256(state.state), uint256(FirstBloodContest.ContestState.CommitOpen));
         assertEq(state.randomnessCapturedAt, releaseBlock + 1);
@@ -187,7 +223,7 @@ contract FirstBloodContestTest is Test {
         assertEq(state.revealWindowEndsAt, releaseBlock + 1 + COMMIT_WINDOW + REVEAL_WINDOW);
     }
 
-    function test_CaptureRandomness_RequiresScheduledState() public {
+    function test_RequestRandomness_RequiresScheduledState() public {
         uint256 releaseBlock = block.number + 5;
         FirstBloodContest.ContestParams memory params = createContestParams(releaseBlock);
         params.sponsor = sponsor;
@@ -195,21 +231,21 @@ contract FirstBloodContestTest is Test {
         vm.prank(sponsor);
         uint256 contestId = contest.scheduleContest{value: PRIZE_POOL}(params);
 
-        // Try to capture before release block
+        // Try to request before release block
         vm.expectRevert(
             abi.encodeWithSelector(FirstBloodContest.ReleaseBlockNotReached.selector, releaseBlock, block.number)
         );
-        contest.captureRandomness(contestId);
+        contest.requestRandomness(contestId);
 
-        // Advance and capture (need to advance past releaseBlock to access blockhash)
+        // Advance and request/fulfill randomness
         advanceAndCaptureRandomness(contestId, releaseBlock);
 
-        // Try to capture again (should fail since state is now CommitOpen)
+        // Try to request again (should fail since state is now CommitOpen)
         vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.NotScheduled.selector, contestId));
-        contest.captureRandomness(contestId);
+        contest.requestRandomness(contestId);
     }
 
-    function test_CaptureRandomness_BlockhashUnavailable() public {
+    function test_RequestRandomness_CanRequestAfterReleaseBlock() public {
         uint256 releaseBlock = block.number + 5;
         FirstBloodContest.ContestParams memory params = createContestParams(releaseBlock);
         params.sponsor = sponsor;
@@ -217,11 +253,15 @@ contract FirstBloodContestTest is Test {
         vm.prank(sponsor);
         uint256 contestId = contest.scheduleContest{value: PRIZE_POOL}(params);
 
-        // Advance too far (blockhash only available for last 256 blocks)
-        vm.roll(releaseBlock + 257);
+        // Advance far past release block (VRF doesn't have the 256 block limitation)
+        vm.roll(releaseBlock + 1000);
 
-        vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.BlockhashUnavailable.selector, releaseBlock));
-        contest.captureRandomness(contestId);
+        // Should still work since VRF doesn't depend on blockhash
+        uint256 requestId = contest.requestRandomness(contestId);
+        assertEq(requestId, 1);
+
+        (, FirstBloodContest.ContestStateData memory state) = contest.getContest(contestId);
+        assertEq(uint256(state.state), uint256(FirstBloodContest.ContestState.RandomnessPending));
     }
 
     // ============ Commit Solution Tests ============
