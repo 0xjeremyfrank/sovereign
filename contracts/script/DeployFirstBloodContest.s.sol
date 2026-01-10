@@ -10,8 +10,7 @@ import {FirstBloodContest} from "../src/FirstBloodContest.sol";
 ///   For local: forge script script/DeployFirstBloodContest.s.sol:DeployFirstBloodContest --rpc-url http://localhost:8545 --broadcast
 contract DeployFirstBloodContest is Script {
     function run() external returns (address) {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
 
         FirstBloodContest contest = new FirstBloodContest();
 

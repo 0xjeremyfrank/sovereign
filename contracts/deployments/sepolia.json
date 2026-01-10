@@ -1,0 +1,11 @@
+{
+  "chainId": 11155111,
+  "network": "sepolia",
+  "contracts": {
+    "FirstBloodContest": {
+      "address": "0xF8f3F757B2B42E0BaE37535DB1130E7d0aC13e39",
+      "deployedAt": "2025-01-09",
+      "txHash": "see broadcast/DeployFirstBloodContest.s.sol/11155111/run-latest.json"
+    }
+  }
+}
