@@ -99,7 +99,7 @@ const Home = () => {
               {/* Side panel */}
               <aside className="space-y-4">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <Legend validation={validation} />
+                  <Legend validation={validation} board={board} size={size} />
                 </div>
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <h3 className="font-semibold mb-2">Rules</h3>

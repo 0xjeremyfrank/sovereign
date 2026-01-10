@@ -38,3 +38,37 @@ export const IconChevronDown = ({ className }: { className?: string }) => {
     </svg>
   );
 };
+
+export const IconCheck = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={classNames('w-4 h-4', className)}
+    >
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+};
+
+export const IconX = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={classNames('w-4 h-4', className)}
+    >
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+};
