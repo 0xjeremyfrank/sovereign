@@ -56,13 +56,8 @@ contract DeployFirstBloodContest is Script {
 
         vm.startBroadcast();
 
-        FirstBloodContest contest = new FirstBloodContest(
-            vrfCoordinator,
-            subscriptionId,
-            keyHash,
-            CALLBACK_GAS_LIMIT,
-            REQUEST_CONFIRMATIONS
-        );
+        FirstBloodContest contest =
+            new FirstBloodContest(vrfCoordinator, subscriptionId, keyHash, CALLBACK_GAS_LIMIT, REQUEST_CONFIRMATIONS);
 
         vm.stopBroadcast();
 

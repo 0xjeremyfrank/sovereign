@@ -12,10 +12,7 @@ contract MockVRFCoordinatorV2Plus {
     mapping(uint256 => address) public requestConsumer;
 
     /// @notice Request random words (mock implementation)
-    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata)
-        external
-        returns (uint256 requestId)
-    {
+    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata) external returns (uint256 requestId) {
         requestId = _nextRequestId++;
         requestConsumer[requestId] = msg.sender;
     }
@@ -31,9 +28,8 @@ contract MockVRFCoordinatorV2Plus {
         randomWords[0] = randomWord;
 
         // Call the consumer's rawFulfillRandomWords function
-        (bool success,) = consumer.call(
-            abi.encodeWithSignature("rawFulfillRandomWords(uint256,uint256[])", requestId, randomWords)
-        );
+        (bool success,) =
+            consumer.call(abi.encodeWithSignature("rawFulfillRandomWords(uint256,uint256[])", requestId, randomWords));
         require(success, "Fulfillment failed");
     }
 
@@ -47,9 +43,8 @@ contract MockVRFCoordinatorV2Plus {
         uint256[] memory randomWords = new uint256[](1);
         randomWords[0] = randomWord;
 
-        (bool success,) = consumer.call(
-            abi.encodeWithSignature("rawFulfillRandomWords(uint256,uint256[])", requestId, randomWords)
-        );
+        (bool success,) =
+            consumer.call(abi.encodeWithSignature("rawFulfillRandomWords(uint256,uint256[])", requestId, randomWords));
         require(success, "Fulfillment failed");
     }
 }
