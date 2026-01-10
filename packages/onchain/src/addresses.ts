@@ -7,8 +7,8 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const satis
 
 const STATIC_ADDRESSES: AddressOverrides = {
   31337: ZERO_ADDRESS, // Anvil (local)
-  8700: ZERO_ADDRESS, // Autonomys Chronos (testnet)
-  870: ZERO_ADDRESS, // Autonomys Mainnet
+  11155111: '0xF8f3F757B2B42E0BaE37535DB1130E7d0aC13e39', // Sepolia (testnet)
+  8453: ZERO_ADDRESS, // Base (mainnet)
 };
 
 const getProcessEnv = (): Record<string, string | undefined> | undefined => {
@@ -16,6 +16,12 @@ const getProcessEnv = (): Record<string, string | undefined> | undefined => {
     return undefined;
   }
   return process.env;
+};
+
+const CHAIN_NAMES: Record<number, string> = {
+  31337: '31337',
+  11155111: 'SEPOLIA',
+  8453: 'BASE',
 };
 
 const readEnvAddress = (
@@ -26,8 +32,9 @@ const readEnvAddress = (
     return undefined;
   }
 
-  const exactKey = `FIRST_BLOOD_CONTEST_ADDRESS_${chainId}`;
-  const nextKey = `NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_${chainId}`;
+  const chainName = CHAIN_NAMES[chainId] ?? chainId.toString();
+  const exactKey = `FIRST_BLOOD_CONTEST_ADDRESS_${chainName}`;
+  const nextKey = `NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_${chainName}`;
 
   return (env[exactKey] ?? env[nextKey]) as Hex | undefined;
 };

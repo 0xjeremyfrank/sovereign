@@ -3,9 +3,9 @@ import { useChainId } from 'wagmi';
 
 const getContractAddress = (chainId: number): `0x${string}` | null => {
   const envKeys: Record<number, string> = {
-    8700: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_8700',
-    870: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_870',
-    31337: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337',
+    11155111: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_SEPOLIA', // Sepolia
+    8453: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_BASE', // Base
+    31337: 'NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337', // Anvil (local)
   };
 
   const envKey = envKeys[chainId];
