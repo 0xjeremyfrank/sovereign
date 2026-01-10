@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { parseEther } from 'viem';
 import {
   useConnection,
@@ -11,7 +10,7 @@ import {
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
-import { ConnectWallet } from '../../components/connect-wallet';
+import { Nav } from '../../components/nav';
 import { useContests } from '../../hooks/use-contests';
 import { useContractAddress } from '../../hooks/use-contract-address';
 
@@ -71,35 +70,13 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <header className="mb-8 flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Link
-              href="/contests"
-              className="mt-1.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors"
-              aria-label="Back to Contests"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 19.5L8.25 12l7.5-7.5"
-                />
-              </svg>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
-              <p className="text-slate-600 mt-1">Manage contests</p>
-            </div>
-          </div>
-          <ConnectWallet />
-        </header>
+        <Nav />
+
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
+          <p className="text-slate-600 mt-1">Manage contests</p>
+        </div>
 
         {!isConnected ? (
           <div className="text-center py-20 text-slate-600">
