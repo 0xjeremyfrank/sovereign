@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import type { BoardState, RegionMap, ValidationResult, CellState } from '@sovereign/engine';
 import { IconCrown } from './icons';
+import { classNames } from '@/lib/utils';
 
 interface Props {
   board: BoardState;
@@ -25,9 +26,6 @@ const PASTELS = [
   'bg-blue-200/70',
   'bg-yellow-200/70',
 ];
-
-const classNames = (...classes: (string | false | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
 
 export const Grid: React.FC<Props> = ({
   board,

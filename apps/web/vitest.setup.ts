@@ -33,14 +33,15 @@ vi.mock('wagmi', () => ({
   }),
   useConnectors: () => [],
   useConnect: () => ({
-    connect: vi.fn(),
-    isPending: false,
+    mutate: vi.fn(),
+    status: 'idle',
   }),
   useDisconnect: () => ({
-    disconnect: vi.fn(),
+    mutate: vi.fn(),
   }),
   useSwitchChain: () => ({
-    switchChain: vi.fn(),
+    mutate: vi.fn(),
+    status: 'idle',
   }),
   useChainId: () => 1,
   useBlockNumber: () => ({ data: undefined }),

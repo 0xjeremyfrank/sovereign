@@ -1,7 +1,5 @@
 import React from 'react';
-
-const classNames = (...classes: (string | false | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import { classNames } from '@/lib/utils';
 
 export const IconCrown = ({ className }: { className?: string }) => {
   return (

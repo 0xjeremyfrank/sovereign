@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IconCrown } from './icons';
 import { ConnectWallet } from './connect-wallet';
-
-const classNames = (...classes: (string | false | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import { classNames } from '@/lib/utils';
 
 interface NavLinkProps {
   href: string;
