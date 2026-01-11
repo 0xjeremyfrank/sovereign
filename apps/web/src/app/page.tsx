@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Grid } from '../components/grid';
 import { Toolbar } from '../components/toolbar';
 import { Legend } from '../components/legend';
-import { IconCrown } from '../components/icons';
+import { Nav } from '../components/nav';
 import { useBoard } from '../hooks/use-board';
 
 const Home = () => {
@@ -35,28 +35,14 @@ const Home = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
       <div className="max-w-5xl mx-auto px-4 py-10">
-        {/* Header */}
-        <header className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              Sovereign <span className="text-slate-400"></span>
-              <span className="inline-flex items-center gap-2 text-base font-medium text-slate-600">
-                <IconCrown className="text-slate-800" /> logic puzzle
-              </span>
-            </h1>
-            <p className="text-slate-600 mt-1">
-              Place one sovereign per row, column, and region. No touching, even diagonally.
-            </p>
-          </div>
-          <nav>
-            <a
-              href="/contests"
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
-            >
-              View Contests
-            </a>
-          </nav>
-        </header>
+        <Nav />
+
+        {/* Page Header */}
+        <div className="mb-6">
+          <p className="text-slate-600">
+            Place one sovereign per row, column, and region. No touching, even diagonally.
+          </p>
+        </div>
 
         {/* Card */}
         <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-5 md:p-6">
