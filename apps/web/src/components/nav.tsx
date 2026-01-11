@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IconCrown } from './icons';
@@ -30,7 +30,7 @@ const NavLink = ({ href, children, isActive }: NavLinkProps) => (
 );
 
 export const Nav = () => {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
 
   const isHome = pathname === '/';
   const isContests = pathname === '/contests' || pathname.startsWith('/contests/');
