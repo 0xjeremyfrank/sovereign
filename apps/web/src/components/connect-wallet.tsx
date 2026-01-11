@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConnection, useConnect, useDisconnect, useSwitchChain, useConnectors } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 

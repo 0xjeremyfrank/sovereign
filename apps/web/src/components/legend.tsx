@@ -1,9 +1,7 @@
 import React from 'react';
 import type { ValidationResult, BoardState } from '@sovereign/engine';
 import { IconCrown, IconCheck, IconX } from './icons';
-
-const classNames = (...classes: (string | false | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import { classNames } from '@/lib/utils';
 
 interface Props {
   validation: ValidationResult;

@@ -4,5 +4,5 @@ import Home from './page';
 
 test('renders homepage text', () => {
   render(<Home />);
-  expect(screen.getByRole('heading', { name: /sovereign/i })).toBeInTheDocument();
+  expect(screen.getByText(/place one sovereign per row/i)).toBeInTheDocument();
 });
