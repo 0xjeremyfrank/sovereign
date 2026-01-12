@@ -339,7 +339,7 @@ const PuzzleView = ({
               <aside className="space-y-4">
                 {/* Status */}
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <Legend validation={validation} />
+                  <Legend validation={validation} board={board} size={contestParams.size} />
                 </div>
 
                 {/* Entry Deposit Info */}
