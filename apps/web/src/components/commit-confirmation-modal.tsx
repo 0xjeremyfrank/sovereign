@@ -2,6 +2,8 @@
 
 import { formatEther } from 'viem';
 
+import { CURRENCY } from '../lib/chain-config';
+
 interface CommitConfirmationModalProps {
   isOpen: boolean;
   onConfirm: () => void;
@@ -34,7 +36,7 @@ export const CommitConfirmationModal = ({
           {entryDepositWei > 0n && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="font-semibold text-amber-800 mb-1">Entry Deposit</p>
-              <p className="text-2xl font-bold text-amber-600">{entryDeposit} AI3</p>
+              <p className="text-2xl font-bold text-amber-600">{entryDeposit} {CURRENCY.symbol}</p>
               <p className="text-sm text-amber-700 mt-1">
                 This deposit will be refunded on valid reveal, or forfeited otherwise.
               </p>

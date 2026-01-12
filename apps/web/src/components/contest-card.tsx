@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { formatEther } from 'viem';
 
+import { CURRENCY } from '../lib/chain-config';
+
 type ContestParams = {
   generatorCodeCid: string;
   engineVersion: string;
@@ -89,13 +91,13 @@ export const ContestCard = ({ contest }: { contest: Contest }) => {
         <div className="space-y-3">
           <div>
             <p className="text-sm text-slate-600">Prize Pool</p>
-            <p className="text-2xl font-bold text-amber-600">{prizePool} AI3</p>
+            <p className="text-2xl font-bold text-amber-600">{prizePool} {CURRENCY.symbol}</p>
           </div>
 
           {entryDeposit && (
             <div>
               <p className="text-sm text-slate-600">Entry Deposit</p>
-              <p className="text-lg font-semibold">{entryDeposit} AI3</p>
+              <p className="text-lg font-semibold">{entryDeposit} {CURRENCY.symbol}</p>
             </div>
           )}
 
