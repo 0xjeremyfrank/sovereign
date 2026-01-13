@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatEther } from 'viem';
 import { useBlockNumber, useChainId } from 'wagmi';
 
+import { CURRENCY } from '../../../../lib/chain-config';
 import { useContest } from '../../../../hooks/use-contests';
 import { useBoard } from '../../../../hooks/use-board';
 import { useSolvedBoardStorage } from '../../../../hooks/use-solved-board-storage';
@@ -267,7 +268,7 @@ const PuzzleView = ({
               </span>
             </h1>
             <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
-              <span className="font-semibold text-amber-600">{prizePool} AI3 Prize</span>
+              <span className="font-semibold text-amber-600">{prizePool} {CURRENCY.symbol} Prize</span>
               <span
                 className={`px-2 py-0.5 rounded text-xs font-medium ${
                   contestState.state === 2
@@ -346,7 +347,7 @@ const PuzzleView = ({
                 {entryDeposit && (
                   <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                     <h3 className="font-semibold text-amber-800 mb-1">Entry Deposit</h3>
-                    <p className="text-2xl font-bold text-amber-600">{entryDeposit} AI3</p>
+                    <p className="text-2xl font-bold text-amber-600">{entryDeposit} {CURRENCY.symbol}</p>
                     <p className="text-xs text-amber-700 mt-1">
                       Refunded on valid reveal, forfeited otherwise
                     </p>

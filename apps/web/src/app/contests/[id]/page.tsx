@@ -12,6 +12,7 @@ import {
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
+import { CURRENCY } from '../../../lib/chain-config';
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { useContractAddress } from '../../../hooks/use-contract-address';
 import { ConnectWallet } from '../../../components/connect-wallet';
@@ -172,16 +173,16 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-500">Total Prize</p>
-                  <p className="text-2xl font-bold text-amber-600">{prizePool} AI3</p>
+                  <p className="text-2xl font-bold text-amber-600">{prizePool} {CURRENCY.symbol}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Remaining</p>
-                  <p className="text-2xl font-bold text-slate-700">{remainingPrize} AI3</p>
+                  <p className="text-2xl font-bold text-slate-700">{remainingPrize} {CURRENCY.symbol}</p>
                 </div>
                 {entryDeposit && (
                   <div>
                     <p className="text-sm text-slate-500">Entry Deposit</p>
-                    <p className="text-lg font-semibold">{entryDeposit} AI3</p>
+                    <p className="text-lg font-semibold">{entryDeposit} {CURRENCY.symbol}</p>
                   </div>
                 )}
                 <div>
@@ -366,7 +367,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                             )}
                           </td>
                           <td className="py-3 font-semibold text-amber-600">
-                            {formatEther(winner.rewardWei)} AI3
+                            {formatEther(winner.rewardWei)} {CURRENCY.symbol}
                           </td>
                           <td className="py-3 text-slate-600">
                             Block {winner.revealedAt.toString()}
@@ -464,7 +465,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   </div>
                   {commitment && commitment.depositPaid > 0n && (
                     <p className="text-sm text-slate-500">
-                      Deposit: {formatEther(commitment.depositPaid)} AI3
+                      Deposit: {formatEther(commitment.depositPaid)} {CURRENCY.symbol}
                     </p>
                   )}
                   {state.state === 3 && (
@@ -531,7 +532,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             {state.forfeitedDepositsWei > 0n && (
               <div className="rounded-xl bg-red-50 border border-red-200 p-4">
                 <p className="text-sm text-red-700">
-                  <span className="font-semibold">Forfeited Deposits:</span> {forfeitedDeposits} AI3
+                  <span className="font-semibold">Forfeited Deposits:</span> {forfeitedDeposits} {CURRENCY.symbol}
                 </p>
               </div>
             )}

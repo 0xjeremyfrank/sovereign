@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useConnection, useConnect, useDisconnect, useSwitchChain, useConnectors } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
 
-const SUPPORTED_CHAIN_ID = sepolia.id; // 11155111
-const SUPPORTED_CHAIN_NAME = 'Sepolia';
+import { SUPPORTED_CHAIN } from '../lib/chain-config';
 
 export const ConnectWallet = () => {
   const [mounted, setMounted] = useState(false);
@@ -16,7 +14,7 @@ export const ConnectWallet = () => {
   const disconnect = useDisconnect();
   const switchChain = useSwitchChain();
 
-  const isCorrectNetwork = chainId === SUPPORTED_CHAIN_ID;
+  const isCorrectNetwork = chainId === SUPPORTED_CHAIN.id;
   const isPending = connect.status === 'pending';
   const isSwitching = switchChain.status === 'pending';
 
@@ -40,11 +38,11 @@ export const ConnectWallet = () => {
       <div className="flex items-center gap-3">
         <span className="text-sm text-red-600 font-medium">Wrong Network</span>
         <button
-          onClick={() => switchChain.mutate({ chainId: SUPPORTED_CHAIN_ID })}
+          onClick={() => switchChain.mutate({ chainId: SUPPORTED_CHAIN.id })}
           disabled={isSwitching}
           className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
         >
-          {isSwitching ? 'Switching...' : `Switch to ${SUPPORTED_CHAIN_NAME}`}
+          {isSwitching ? 'Switching...' : `Switch to ${SUPPORTED_CHAIN.name}`}
         </button>
       </div>
     );

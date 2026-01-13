@@ -10,6 +10,7 @@ import {
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
+import { CURRENCY } from '../../lib/chain-config';
 import { Nav } from '../../components/nav';
 import { useContests } from '../../hooks/use-contests';
 import { useContractAddress } from '../../hooks/use-contract-address';
@@ -426,7 +427,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
         </div>
         <div>
           <label htmlFor="prizePool" className="block text-sm font-medium text-slate-700 mb-1">
-            Prize Pool (AI3)
+            Prize Pool ({CURRENCY.symbol})
           </label>
           <input
             id="prizePool"
@@ -440,7 +441,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">
-          Total cost: <span className="font-semibold">{formData.prizePoolEth} AI3</span> (prize
+          Total cost: <span className="font-semibold">{formData.prizePoolEth} {CURRENCY.symbol}</span> (prize
           escrow)
         </p>
         <button

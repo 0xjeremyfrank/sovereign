@@ -14,6 +14,7 @@ import { SaltBackupButton } from './salt-backup-button';
 import { Grid } from './grid';
 import { useBoard } from '../hooks/use-board';
 import { decodeBoard, type BoardState } from '@sovereign/engine';
+import { getExplorerTxUrl, CURRENCY } from '../lib/chain-config';
 
 interface CommitSolutionFormProps {
   contestId: bigint;
@@ -38,10 +39,10 @@ const extractErrorReason = (error: Error | null, entryDepositWei: bigint): strin
     return 'You have already committed a solution to this contest.';
   }
   if (message.includes('IncorrectDeposit')) {
-    return `Please send exactly ${formatEther(entryDepositWei)} AI3 as your entry deposit.`;
+    return `Please send exactly ${formatEther(entryDepositWei)} ${CURRENCY.symbol} as your entry deposit.`;
   }
   if (message.includes('insufficient funds') || message.includes('insufficient balance')) {
-    return `Insufficient balance. You need at least ${formatEther(entryDepositWei)} AI3.`;
+    return `Insufficient balance. You need at least ${formatEther(entryDepositWei)} ${CURRENCY.symbol}.`;
   }
 
   return message;
@@ -132,7 +133,7 @@ export const CommitSolutionForm = ({
   };
 
   if (isSuccess && hash) {
-    const explorerUrl = `https://explorer.autonomys.xyz/tx/${hash}`;
+    const explorerUrl = getExplorerTxUrl(hash);
     return (
       <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
         <div className="text-center space-y-4">
@@ -142,7 +143,7 @@ export const CommitSolutionForm = ({
             Your solution has been committed to Contest #{contestId.toString()}.
           </p>
           {entryDepositWei > 0n && (
-            <p className="text-sm text-slate-500">Entry deposit: {entryDeposit} AI3</p>
+            <p className="text-sm text-slate-500">Entry deposit: {entryDeposit} {CURRENCY.symbol}</p>
           )}
           <div className="flex gap-3 justify-center pt-4">
             <a
@@ -264,15 +265,15 @@ export const CommitSolutionForm = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600">Entry Deposit</span>
-                  <span className="font-semibold">{entryDeposit} AI3</span>
+                  <span className="font-semibold">{entryDeposit} {CURRENCY.symbol}</span>
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>Est. Gas</span>
-                  <span>~0.002 AI3</span>
+                  <span>~0.002 {CURRENCY.symbol}</span>
                 </div>
                 <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between">
                   <span className="font-semibold">Total</span>
-                  <span className="font-semibold">~{entryDeposit} AI3</span>
+                  <span className="font-semibold">~{entryDeposit} {CURRENCY.symbol}</span>
                 </div>
               </div>
             </div>

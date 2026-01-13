@@ -2,7 +2,9 @@ import { createConfig, http } from 'wagmi';
 import { sepolia, base } from 'wagmi/chains';
 import { injected } from '@wagmi/connectors';
 
-// Use Sepolia for testnet, Base for mainnet
+import { SUPPORTED_CHAIN } from './chain-config';
+
+// Configure wagmi with supported chains
 const chains = [sepolia, base] as const;
 
 export const wagmiConfig = createConfig({
@@ -14,7 +16,8 @@ export const wagmiConfig = createConfig({
   },
 });
 
-// Re-export chain IDs for convenience
-export const SEPOLIA_CHAIN_ID = sepolia.id; // 11155111
-export const BASE_CHAIN_ID = base.id; // 8453
+// Re-export from chain-config for backwards compatibility
+export { SUPPORTED_CHAIN };
+export const SEPOLIA_CHAIN_ID = sepolia.id;
+export const BASE_CHAIN_ID = base.id;
 
