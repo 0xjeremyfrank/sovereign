@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { formatEther } from 'viem';
 
 import { CURRENCY } from '../lib/chain-config';
@@ -66,6 +67,7 @@ const getStateColor = (state: number): string => {
 };
 
 export const ContestCard = ({ contest }: { contest: Contest }) => {
+  const router = useRouter();
   const stateName = CONTEST_STATE_NAMES[contest.state.state] || 'Unknown';
   const prizePool = formatEther(contest.params.prizePoolWei);
   const entryDeposit =
@@ -111,13 +113,16 @@ export const ContestCard = ({ contest }: { contest: Contest }) => {
           <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
             <p className="text-xs text-slate-500">Engine: {contest.params.engineVersion}</p>
             {(contest.state.state === 2 || contest.state.state === 3) && (
-              <Link
-                href={`/contests/${contest.contestId.toString()}/play`}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/contests/${contest.contestId.toString()}/play`);
+                }}
                 className="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 transition-colors"
-                onClick={(e) => e.stopPropagation()}
               >
                 Play →
-              </Link>
+              </button>
             )}
           </div>
         </div>
