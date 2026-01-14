@@ -178,6 +178,14 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         s_requestConfirmations = requestConfirmations;
     }
 
+    // ============ Admin Functions ============
+
+    /// @notice Update the callback gas limit for VRF fulfillment
+    /// @param newLimit New gas limit value
+    function setCallbackGasLimit(uint32 newLimit) external onlyOwner {
+        s_callbackGasLimit = newLimit;
+    }
+
     // ============ Core Functions ============
 
     /// @notice Schedule a new contest

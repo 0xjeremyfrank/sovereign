@@ -23,7 +23,7 @@ contract DeployFirstBloodContest is Script {
     bytes32 constant BASE_KEY_HASH = 0x00b81b5a830cb0a0ae0277958529042caa3acba0b84a835c8db082ded8854f28; // 150 gwei lane
 
     // Common VRF settings
-    uint32 constant CALLBACK_GAS_LIMIT = 100000;
+    uint32 constant CALLBACK_GAS_LIMIT = 300000;
     uint16 constant REQUEST_CONFIRMATIONS = 3;
 
     function run() external returns (address) {
