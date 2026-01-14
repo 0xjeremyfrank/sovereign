@@ -7,7 +7,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const satis
 
 const STATIC_ADDRESSES: AddressOverrides = {
   31337: ZERO_ADDRESS, // Anvil (local)
-  11155111: '0xF8f3F757B2B42E0BaE37535DB1130E7d0aC13e39', // Sepolia (testnet)
+  11155111: '0xdfb2A4CE9BcDB3358a757E34497373b5429b3BfE', // Sepolia (testnet) - VRF enabled
   8453: ZERO_ADDRESS, // Base (mainnet)
 };
 
