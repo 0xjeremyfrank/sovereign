@@ -89,7 +89,7 @@ const AdminPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <CaptureRandomnessCard contractAddress={contractAddress} contests={contests} />
+            <RequestRandomnessCard contractAddress={contractAddress} contests={contests} />
             <CloseContestCard contractAddress={contractAddress} contests={contests} />
             <ScheduleContestCard contractAddress={contractAddress} />
           </div>
@@ -105,7 +105,7 @@ type Contest = {
   state: { state: number; winnerCount: number };
 };
 
-const CaptureRandomnessCard = ({
+const RequestRandomnessCard = ({
   contractAddress,
   contests,
 }: {
@@ -123,17 +123,17 @@ const CaptureRandomnessCard = ({
     writeContract({
       address: contractAddress,
       abi: firstBloodContestAbi,
-      functionName: 'captureRandomness',
+      functionName: 'requestRandomness',
       args: [BigInt(contestId)],
     });
   };
 
   return (
     <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
-      <h2 className="text-lg font-semibold mb-4">Capture Randomness</h2>
+      <h2 className="text-lg font-semibold mb-4">Request Randomness</h2>
       <p className="text-sm text-slate-600 mb-4">
-        Call after release block to capture blockhash and open commits. Must be called within 256
-        blocks of release block or blockhash becomes unavailable.
+        Call after release block to request VRF randomness and open commits. The contest will
+        transition to CommitOpen once the VRF callback is fulfilled.
       </p>
 
       {scheduledContests.length > 0 && (
@@ -160,12 +160,12 @@ const CaptureRandomnessCard = ({
           disabled={!contestId || isPending || isConfirming}
           className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Capture'}
+          {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Request'}
         </button>
       </div>
 
       {isSuccess && (
-        <p className="mt-3 text-sm text-green-600">Randomness captured successfully!</p>
+        <p className="mt-3 text-sm text-green-600">Randomness requested! Waiting for VRF fulfillment...</p>
       )}
       {error && (
         <div className="mt-3 p-3 bg-red-50 rounded-lg">
