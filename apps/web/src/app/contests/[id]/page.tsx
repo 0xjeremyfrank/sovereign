@@ -56,12 +56,12 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     hash: closeHash,
   });
 
-  const handleCaptureRandomness = () => {
+  const handleRequestRandomness = () => {
     if (!contractAddress) return;
     writeCaptureRandomness({
       address: contractAddress,
       abi: firstBloodContestAbi,
-      functionName: 'captureRandomness',
+      functionName: 'requestRandomness',
       args: [contestId],
     });
   };
@@ -105,13 +105,9 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const hasCommitted = commitment && commitment.committedAt > 0n;
   const commitBufferEndsAt = hasCommitted ? commitment.committedAt + params_.commitBuffer : 0n;
 
-  // Check if it's too late to capture randomness (blockhash only available for last 256 blocks)
-  const isTooLateToCapture = currentBlock && currentBlock > params_.releaseBlock + 256n;
+  // Check if randomness can be requested (VRF has no time limit after release block)
   const canCaptureRandomness =
-    state.state === 0 &&
-    currentBlock &&
-    currentBlock >= params_.releaseBlock &&
-    !isTooLateToCapture;
+    state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock;
 
   // Check if contest can be closed
   const canCloseContest =
@@ -197,78 +193,42 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <h2 className="text-lg font-semibold mb-4">Randomness</h2>
               {state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock ? (
                 <div className="space-y-3">
-                  {isTooLateToCapture ? (
-                    <>
-                      <div className="flex items-center gap-3 text-red-600">
-                        <div className="h-3 w-3 rounded-full bg-red-500" />
-                        <span>Too late to capture</span>
-                      </div>
-                      <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                        <p className="text-sm font-medium text-red-800 mb-1">
-                          Blockhash Unavailable
-                        </p>
-                        <p className="text-sm text-red-700">
-                          More than 256 blocks have passed since the release block (
-                          {params_.releaseBlock.toString()}). The blockhash is no longer available,
-                          so randomness cannot be captured. The contest cannot proceed.
-                        </p>
-                        {currentBlock && (
-                          <p className="text-xs text-red-600 mt-2">
-                            Current block: {currentBlock.toString()} (Release block:{' '}
-                            {params_.releaseBlock.toString()}, Difference:{' '}
-                            {(currentBlock - params_.releaseBlock).toString()} blocks)
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3 text-amber-600">
-                        <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
-                        <span>Ready for capture</span>
-                      </div>
-                      <p className="text-sm text-slate-500">
-                        Release block reached. Call{' '}
-                        <code className="bg-slate-100 px-1 rounded">captureRandomness({id})</code>{' '}
-                        to start commits.
-                      </p>
-                      {currentBlock && (
-                        <p className="text-xs text-slate-500">
-                          Must be called within 256 blocks of release block. Blocks remaining:{' '}
-                          {256n - (currentBlock - params_.releaseBlock)}.
+                  <div className="flex items-center gap-3 text-amber-600">
+                    <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
+                    <span>Ready to request randomness</span>
+                  </div>
+                  <p className="text-sm text-slate-500">
+                    Release block reached. Call{' '}
+                    <code className="bg-slate-100 px-1 rounded">requestRandomness({id})</code> to
+                    request VRF and start commits.
+                  </p>
+                  {isConnected && contractAddress && (
+                    <div className="space-y-2">
+                      <button
+                        onClick={handleRequestRandomness}
+                        disabled={isCapturePending || isCaptureConfirming || !canCaptureRandomness}
+                        className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isCapturePending
+                          ? 'Confirming...'
+                          : isCaptureConfirming
+                            ? 'Processing...'
+                            : 'Request Randomness'}
+                      </button>
+                      {isCaptureSuccess && (
+                        <p className="text-sm text-green-600">
+                          Randomness requested! Waiting for VRF fulfillment...
                         </p>
                       )}
-                      {isConnected && contractAddress && (
-                        <div className="space-y-2">
-                          <button
-                            onClick={handleCaptureRandomness}
-                            disabled={
-                              isCapturePending || isCaptureConfirming || !canCaptureRandomness
-                            }
-                            className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                          >
-                            {isCapturePending
-                              ? 'Confirming...'
-                              : isCaptureConfirming
-                                ? 'Processing...'
-                                : 'Capture Randomness'}
-                          </button>
-                          {isCaptureSuccess && (
-                            <p className="text-sm text-green-600">
-                              Randomness captured successfully!
-                            </p>
-                          )}
-                          {captureError && (
-                            <div className="p-2 bg-red-50 rounded-lg">
-                              <p className="text-xs font-medium text-red-700">Transaction Failed</p>
-                              <p className="text-xs text-red-600 mt-1 font-mono break-all">
-                                {captureError.message}
-                              </p>
-                            </div>
-                          )}
+                      {captureError && (
+                        <div className="p-2 bg-red-50 rounded-lg">
+                          <p className="text-xs font-medium text-red-700">Transaction Failed</p>
+                          <p className="text-xs text-red-600 mt-1 font-mono break-all">
+                            {captureError.message}
+                          </p>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               ) : state.state === 0 ? (
@@ -279,7 +239,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               ) : state.state === 1 ? (
                 <div className="flex items-center gap-3 text-yellow-600">
                   <div className="animate-pulse h-3 w-3 rounded-full bg-yellow-500" />
-                  <span>Randomness pending capture...</span>
+                  <span>Waiting for VRF fulfillment...</span>
                 </div>
               ) : (
                 <div className="space-y-2">

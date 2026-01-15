@@ -74,6 +74,7 @@ export const useContest = (contestId: bigint | undefined) => {
     chainId,
     query: {
       enabled: contestId !== undefined && !!contract,
+      refetchInterval: 12000, // Poll every 12 seconds (~1 block on Sepolia)
     },
   });
 };
@@ -170,6 +171,7 @@ export const useContestCommitment = (
     chainId,
     query: {
       enabled: contestId !== undefined && !!solver && !!contract,
+      refetchInterval: 12000, // Poll every 12 seconds
     },
   }) as { data: Commitment | undefined; isLoading: boolean; error: Error | null };
 };
@@ -201,6 +203,7 @@ export const useContestWinners = (contestId: bigint | undefined) => {
     chainId,
     query: {
       enabled: contestId !== undefined && !!contract,
+      refetchInterval: 12000, // Poll every 12 seconds
     },
   }) as { data: Winner[] | undefined; isLoading: boolean; error: Error | null };
 };

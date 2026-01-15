@@ -178,6 +178,14 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         s_requestConfirmations = requestConfirmations;
     }
 
+    // ============ Admin Functions ============
+
+    /// @notice Update the callback gas limit for VRF fulfillment
+    /// @param newLimit New gas limit value
+    function setCallbackGasLimit(uint32 newLimit) external onlyOwner {
+        s_callbackGasLimit = newLimit;
+    }
+
     // ============ Core Functions ============
 
     /// @notice Schedule a new contest
@@ -259,19 +267,23 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         uint256 contestId = storedValue - 1; // Retrieve actual contestId
 
         ContestStateData storage state = contestStates[contestId];
-        ContestParams memory params = contests[contestId];
 
         if (state.state != ContestState.RandomnessPending) {
             revert ContestNotRandomnessPending(contestId, state.state);
         }
+
+        // Only read the specific fields needed to avoid loading entire struct (including strings) to memory
+        // This significantly reduces gas consumption for the VRF callback
+        uint256 commitWindow = contests[contestId].commitWindow;
+        uint256 revealWindow = contests[contestId].revealWindow;
 
         // Use the random word to derive the global seed
         bytes32 globalSeed = keccak256(abi.encodePacked(randomWords[0], contestId));
 
         state.globalSeed = globalSeed;
         state.randomnessCapturedAt = block.number;
-        state.commitWindowEndsAt = block.number + params.commitWindow;
-        state.revealWindowEndsAt = state.commitWindowEndsAt + params.revealWindow;
+        state.commitWindowEndsAt = block.number + commitWindow;
+        state.revealWindowEndsAt = state.commitWindowEndsAt + revealWindow;
         state.state = ContestState.CommitOpen;
 
         emit RandomnessFulfilled(contestId, requestId, globalSeed);

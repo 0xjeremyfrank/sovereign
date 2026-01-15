@@ -150,12 +150,12 @@ const AwaitingRandomnessView = ({
           {contestState.state === 0 && releaseBlockReached && (
             <>
               <p className="text-slate-600 mb-6">
-                The release block has been reached! Waiting for randomness to be captured. Someone
-                needs to call <code className="bg-slate-100 px-1 rounded">captureRandomness</code>.
+                The release block has been reached! Waiting for randomness to be requested. Someone
+                needs to call <code className="bg-slate-100 px-1 rounded">requestRandomness</code>.
               </p>
               <div className="flex items-center justify-center gap-3 text-amber-600">
                 <div className="animate-pulse h-3 w-3 rounded-full bg-amber-500" />
-                <span>Ready for randomness capture</span>
+                <span>Ready for randomness request</span>
               </div>
             </>
           )}
@@ -163,11 +163,11 @@ const AwaitingRandomnessView = ({
           {contestState.state === 1 && (
             <>
               <p className="text-slate-600 mb-6">
-                Randomness is being captured. The puzzle will be available shortly.
+                VRF randomness requested. Waiting for Chainlink to fulfill the request...
               </p>
               <div className="flex items-center justify-center gap-3 text-yellow-600">
                 <div className="animate-pulse h-3 w-3 rounded-full bg-yellow-500" />
-                <span>Capturing randomness...</span>
+                <span>Waiting for VRF fulfillment...</span>
               </div>
             </>
           )}
