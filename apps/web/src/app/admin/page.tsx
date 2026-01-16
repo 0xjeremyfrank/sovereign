@@ -11,7 +11,7 @@ import {
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
-import { CURRENCY } from '../../lib/chain-config';
+import { CURRENCY, getExplorerTxUrl } from '../../lib/chain-config';
 import { Nav } from '../../components/nav';
 import { useContests } from '../../hooks/use-contests';
 import { useContractAddress } from '../../hooks/use-contract-address';
@@ -165,8 +165,18 @@ const RequestRandomnessCard = ({
         </button>
       </div>
 
-      {isSuccess && (
-        <p className="mt-3 text-sm text-green-600">Randomness requested! Waiting for VRF fulfillment...</p>
+      {isSuccess && hash && (
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-sm text-green-600">Randomness requested! Waiting for VRF fulfillment...</p>
+          <a
+            href={getExplorerTxUrl(hash)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-amber-600 hover:text-amber-700"
+          >
+            View on Explorer →
+          </a>
+        </div>
       )}
       {error && (
         <div className="mt-3 p-3 bg-red-50 rounded-lg">
@@ -238,7 +248,19 @@ const CloseContestCard = ({
         </button>
       </div>
 
-      {isSuccess && <p className="mt-3 text-sm text-green-600">Contest closed!</p>}
+      {isSuccess && hash && (
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-sm text-green-600">Contest closed!</p>
+          <a
+            href={getExplorerTxUrl(hash)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-amber-600 hover:text-amber-700"
+          >
+            View on Explorer →
+          </a>
+        </div>
+      )}
       {error && (
         <div className="mt-3 p-3 bg-red-50 rounded-lg">
           <p className="text-sm font-medium text-red-700">Transaction Failed</p>
@@ -459,7 +481,19 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
         </button>
       </div>
 
-      {isSuccess && <p className="mt-3 text-sm text-green-600">Contest scheduled!</p>}
+      {isSuccess && hash && (
+        <div className="mt-3 flex items-center gap-3">
+          <p className="text-sm text-green-600">Contest scheduled!</p>
+          <a
+            href={getExplorerTxUrl(hash)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-amber-600 hover:text-amber-700"
+          >
+            View on Explorer →
+          </a>
+        </div>
+      )}
       {error && (
         <div className="mt-3 p-3 bg-red-50 rounded-lg">
           <p className="text-sm font-medium text-red-700">Transaction Failed</p>

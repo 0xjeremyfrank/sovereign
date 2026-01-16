@@ -12,7 +12,7 @@ import {
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
-import { CURRENCY } from '../../../lib/chain-config';
+import { CURRENCY, getExplorerTxUrl } from '../../../lib/chain-config';
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { useContractAddress } from '../../../hooks/use-contract-address';
 import { ConnectWallet } from '../../../components/connect-wallet';
@@ -215,10 +215,20 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                             ? 'Processing...'
                             : 'Request Randomness'}
                       </button>
-                      {isCaptureSuccess && (
-                        <p className="text-sm text-green-600">
-                          Randomness requested! Waiting for VRF fulfillment...
-                        </p>
+                      {isCaptureSuccess && captureHash && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-green-600">
+                            Randomness requested! Waiting for VRF fulfillment...
+                          </p>
+                          <a
+                            href={getExplorerTxUrl(captureHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-amber-600 hover:text-amber-700"
+                          >
+                            View →
+                          </a>
+                        </div>
                       )}
                       {captureError && (
                         <div className="p-2 bg-red-50 rounded-lg">
@@ -469,8 +479,18 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                             ? 'Processing...'
                             : 'Close Contest'}
                       </button>
-                      {isCloseSuccess && (
-                        <p className="text-sm text-green-600">Contest closed successfully!</p>
+                      {isCloseSuccess && closeHash && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-green-600">Contest closed successfully!</p>
+                          <a
+                            href={getExplorerTxUrl(closeHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-amber-600 hover:text-amber-700"
+                          >
+                            View →
+                          </a>
+                        </div>
                       )}
                       {closeError && (
                         <div className="p-2 bg-red-50 rounded-lg">
