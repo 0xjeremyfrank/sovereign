@@ -2,6 +2,7 @@
 
 import { useContests } from '../../hooks/use-contests';
 import { ContestCard } from '../../components/contest-card';
+import { ContestCardSkeleton } from '../../components/skeleton';
 import { Nav } from '../../components/nav';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,11 @@ const ContestsPage = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20 text-slate-600">Loading contests...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ContestCardSkeleton />
+            <ContestCardSkeleton />
+            <ContestCardSkeleton />
+          </div>
         ) : contests.length === 0 ? (
           <div className="text-center py-20 text-slate-600">No contests found</div>
         ) : (
