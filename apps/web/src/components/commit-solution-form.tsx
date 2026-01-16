@@ -16,12 +16,19 @@ import { useBoard } from '../hooks/use-board';
 import { decodeBoard, type BoardState } from '@sovereign/engine';
 import { getExplorerTxUrl, CURRENCY } from '../lib/chain-config';
 
+interface Commitment {
+  commitHash: `0x${string}`;
+  committedAt: bigint;
+  depositPaid: bigint;
+}
+
 interface CommitSolutionFormProps {
   contestId: bigint;
   entryDepositWei: bigint;
   contestState: number; // Contest state (2 = CommitOpen)
   globalSeed: `0x${string}`;
   size: number;
+  onChainCommitment?: Commitment;
 }
 
 const extractErrorReason = (error: Error | null, entryDepositWei: bigint): string => {
@@ -54,12 +61,13 @@ export const CommitSolutionForm = ({
   contestState,
   globalSeed,
   size,
+  onChainCommitment,
 }: CommitSolutionFormProps) => {
   const { address, status } = useConnection();
   const isConnected = status === 'connected';
 
   const { getSolvedBoard } = useSolvedBoardStorage();
-  const { storeCommitData, getCommitData } = useCommitStorage();
+  const { storeCommitData } = useCommitStorage();
   const { commit, hash, isPending, isConfirming, isSuccess, error } = useCommitSolution();
 
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -96,8 +104,8 @@ export const CommitSolutionForm = ({
     : puzzleValidation.isComplete && puzzleValidation.isValid;
 
   const isCommitWindowOpen = contestState === 2;
-  const storedCommit = getCommitData(contestId);
-  const hasCommitted = storedCommit !== null;
+  // Use on-chain commitment as authoritative source (local storage is only for salt backup)
+  const hasCommittedOnChain = onChainCommitment && onChainCommitment.committedAt > 0n;
   const entryDeposit = formatEther(entryDepositWei);
 
   const handleCommit = () => {
@@ -161,7 +169,7 @@ export const CommitSolutionForm = ({
     );
   }
 
-  if (hasCommitted) {
+  if (hasCommittedOnChain) {
     return (
       <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
         <div className="space-y-4">
@@ -170,7 +178,7 @@ export const CommitSolutionForm = ({
             <span className="font-semibold">Already Committed</span>
           </div>
           <p className="text-sm text-slate-600">
-            You committed your solution at {new Date(storedCommit!.committedAt).toLocaleString()}.
+            You committed your solution at block {onChainCommitment.committedAt.toString()}.
           </p>
           <SaltBackupButton contestId={contestId} />
         </div>

@@ -397,6 +397,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   contestState={state.state}
                   globalSeed={state.globalSeed}
                   size={params_.size}
+                  {...(commitment ? { onChainCommitment: commitment } : {})}
                 />
               )}
 

@@ -7,6 +7,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useBlockNumber,
+  usePublicClient,
 } from 'wagmi';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
@@ -252,17 +253,18 @@ const CloseContestCard = ({
 
 const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string}` }) => {
   const { data: currentBlock } = useBlockNumber({ watch: true });
+  const publicClient = usePublicClient();
   const [formData, setFormData] = useState({
     generatorCodeCid: 'QmTest123',
     engineVersion: '1.0.0',
     size: '6',
-    releaseBlockOffset: '50',
-    commitWindow: '100',
+    releaseBlockOffset: '10',
+    commitWindow: '20',
     commitBuffer: '5',
-    revealWindow: '200',
-    topN: '3',
+    revealWindow: '20',
+    topN: '1',
     entryDepositWei: '0',
-    prizePoolEth: '0.1',
+    prizePoolEth: '0.001',
   });
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
@@ -272,8 +274,12 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
     ? currentBlock + BigInt(formData.releaseBlockOffset || '0')
     : null;
 
-  const handleSchedule = () => {
-    if (!releaseBlockAbsolute) return;
+  const handleSchedule = async () => {
+    if (!publicClient) return;
+
+    // Fetch the latest block number at submission time to avoid stale values
+    const latestBlock = await publicClient.getBlockNumber();
+    const releaseBlock = latestBlock + BigInt(formData.releaseBlockOffset || '0');
 
     const prizePoolWei = parseEther(formData.prizePoolEth);
     const entryDepositWei = BigInt(formData.entryDepositWei);
@@ -287,7 +293,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
           generatorCodeCid: formData.generatorCodeCid,
           engineVersion: formData.engineVersion,
           size: Number(formData.size),
-          releaseBlock: releaseBlockAbsolute,
+          releaseBlock,
           commitWindow: BigInt(formData.commitWindow),
           commitBuffer: BigInt(formData.commitBuffer),
           revealWindow: BigInt(formData.revealWindow),
@@ -446,7 +452,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
         </p>
         <button
           onClick={handleSchedule}
-          disabled={isPending || isConfirming || !releaseBlockAbsolute}
+          disabled={isPending || isConfirming || !publicClient}
           className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Schedule Contest'}
