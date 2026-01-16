@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { formatEther } from 'viem';
 import { useConnection } from 'wagmi';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 import { useCommitStorage, generateSalt } from '../hooks/use-commit-storage';
 import { generateCommitHashFromBoard } from '../lib/commit-hash';
@@ -12,6 +13,7 @@ import { useSolvedBoardStorage } from '../hooks/use-solved-board-storage';
 import { CommitConfirmationModal } from './commit-confirmation-modal';
 import { SaltBackupButton } from './salt-backup-button';
 import { Grid } from './grid';
+import { Spinner } from './spinner';
 import { useBoard } from '../hooks/use-board';
 import { decodeBoard, type BoardState } from '@sovereign/engine';
 import { getExplorerTxUrl, CURRENCY } from '../lib/chain-config';
@@ -72,6 +74,31 @@ export const CommitSolutionForm = ({
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [decodedBoard, setDecodedBoard] = useState<BoardState | null>(null);
+
+  // Track previous values to detect state changes
+  const prevSuccess = useRef(false);
+
+  // Toast notifications for commit
+  useEffect(() => {
+    if (isSuccess && hash && !prevSuccess.current) {
+      toast.success('Solution committed!', {
+        description: `Your solution for Contest #${contestId.toString()} has been submitted.`,
+        action: {
+          label: 'View',
+          onClick: () => window.open(getExplorerTxUrl(hash), '_blank'),
+        },
+      });
+    }
+    prevSuccess.current = isSuccess;
+  }, [isSuccess, hash, contestId]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error('Failed to commit solution', {
+        description: extractErrorReason(error, entryDepositWei),
+      });
+    }
+  }, [error, entryDepositWei]);
 
   const {
     board: puzzleBoard,
@@ -298,8 +325,9 @@ export const CommitSolutionForm = ({
             <button
               onClick={handleCommit}
               disabled={!isSolutionValid || isPending || isConfirming}
-              className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {(isPending || isConfirming) && <Spinner size="md" />}
               {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Commit Solution'}
             </button>
 
