@@ -13,10 +13,15 @@ Blockchain-native logic puzzle inspired by the classic n-Queens problem.
 - `contracts/` — Solidity smart contracts (Foundry)
 - `docs/` — Documentation
 
-## Blockchain Integration (planned)
+## Blockchain Integration
 
+**Implemented:**
 - Chainlink VRF for verifiable random seed generation
+- Commit-reveal contest flow with on-chain verification
+
+**Investigating:**
 - Chainlink Automation for scheduled puzzle releases
+- Chainlink Runtime Environment (CRE) workflows
 
 ## Development
 
