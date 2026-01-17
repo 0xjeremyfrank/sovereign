@@ -130,6 +130,71 @@ gh project item-edit --id <item-id> --project-id <project-id> --field-id <status
 gh project item-list 2 --owner @me --format json | jq '.items[] | {title, status}'
 ```
 
+### Issue Relationships
+
+Use GitHub's native sub-issues feature to track dependencies (blocks/blocked by).
+
+**Relationship Types**:
+- **Parent/Child (Sub-issues)**: Epic → tasks breakdown
+- **Blocks/Blocked by**: Work that must complete before another can start
+
+**Managing Relationships**:
+
+```bash
+# Add a sub-issue (child) to a parent issue
+gh api graphql -f query='
+  mutation {
+    addSubIssue(input: {
+      issueId: "<PARENT_NODE_ID>"
+      subIssueId: "<CHILD_NODE_ID>"
+    }) {
+      issue { number title }
+      subIssue { number title }
+    }
+  }'
+
+# Remove a sub-issue from parent
+gh api graphql -f query='
+  mutation {
+    removeSubIssue(input: {
+      issueId: "<PARENT_NODE_ID>"
+      subIssueId: "<CHILD_NODE_ID>"
+    }) {
+      issue { number title }
+    }
+  }'
+
+# Get issue node ID
+gh api graphql -f query='
+  query { repository(owner: "0xjeremyfrank", name: "sovereign") {
+    issue(number: <NUM>) { id }
+  }}'
+
+# View issue with relationships
+gh api graphql -f query='
+  query { repository(owner: "0xjeremyfrank", name: "sovereign") {
+    issue(number: <NUM>) {
+      title
+      parent { number title }
+      subIssues(first: 20) { nodes { number title state } }
+    }
+  }}'
+
+# List all blocked issues
+gh issue list --label "blocked" --state open
+```
+
+**Workflow for Dependencies**:
+1. When an issue depends on another, add it as sub-issue of the blocker
+2. Add `blocked` label to dependent issue for visibility
+3. When blocker is resolved, remove `blocked` label from dependent
+4. Check for blocked issues before starting work
+
+**Conventions**:
+- Epic issues are parents of their task breakdowns
+- For A blocks B: make B a sub-issue of A, add `blocked` label to B
+- Document blocking reason in issue comment when adding relationship
+
 ### Session Checklist
 
 - [ ] Check current milestone progress

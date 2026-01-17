@@ -20,6 +20,7 @@ import { ConnectWallet } from '../../../components/connect-wallet';
 import { ContestTimeline } from '../../../components/contest-timeline';
 import { BlockCountdown } from '../../../components/block-countdown';
 import { CommitSolutionForm } from '../../../components/commit-solution-form';
+import { RevealSolutionForm } from '../../../components/reveal-solution-form';
 import { Spinner } from '../../../components/spinner';
 import { ContestDetailSkeleton, SidebarSkeleton, Skeleton } from '../../../components/skeleton';
 
@@ -522,13 +523,18 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       Deposit: {formatEther(commitment.depositPaid)} {CURRENCY.symbol}
                     </p>
                   )}
-                  {state.state === 3 && (
-                    <button
-                      disabled
-                      className="w-full px-4 py-3 bg-green-500 text-white rounded-lg font-medium opacity-50 cursor-not-allowed"
-                    >
-                      Reveal Solution (Coming Soon)
-                    </button>
+                  {(state.state === 2 || state.state === 3) && (
+                    <RevealSolutionForm
+                      contestId={contestId}
+                      contestState={state.state}
+                      prizePoolWei={params_.prizePoolWei}
+                      topN={params_.topN}
+                      winnerCount={state.winnerCount}
+                      randomnessCapturedAt={state.randomnessCapturedAt}
+                      commitBuffer={params_.commitBuffer}
+                      revealWindowEndsAt={state.revealWindowEndsAt}
+                      depositPaid={commitment?.depositPaid ?? 0n}
+                    />
                   )}
                   {state.state === 2 && commitBufferEndsAt > 0n && (
                     <p className="text-xs text-slate-500">
