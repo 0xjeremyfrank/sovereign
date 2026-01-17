@@ -77,6 +77,7 @@ export const CommitSolutionForm = ({
 
   // Track previous values to detect state changes
   const prevSuccess = useRef(false);
+  const prevError = useRef<Error | null>(null);
 
   // Toast notifications for commit
   useEffect(() => {
@@ -93,11 +94,12 @@ export const CommitSolutionForm = ({
   }, [isSuccess, hash, contestId]);
 
   useEffect(() => {
-    if (error) {
+    if (error && error !== prevError.current) {
       toast.error('Failed to commit solution', {
         description: extractErrorReason(error, entryDepositWei),
       });
     }
+    prevError.current = error;
   }, [error, entryDepositWei]);
 
   const {

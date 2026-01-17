@@ -62,6 +62,8 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   // Track previous values to detect state changes
   const prevCaptureSuccess = useRef(false);
   const prevCloseSuccess = useRef(false);
+  const prevCaptureError = useRef<Error | null>(null);
+  const prevCloseError = useRef<Error | null>(null);
 
   // Toast notifications for randomness request
   useEffect(() => {
@@ -78,11 +80,13 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [isCaptureSuccess, captureHash]);
 
   useEffect(() => {
-    if (captureError) {
+    if (captureError && captureError !== prevCaptureError.current) {
+      const msg = captureError.message;
       toast.error('Failed to request randomness', {
-        description: captureError.message.slice(0, 100),
+        description: msg.length > 100 ? `${msg.slice(0, 100)}...` : msg,
       });
     }
+    prevCaptureError.current = captureError;
   }, [captureError]);
 
   // Toast notifications for close contest
@@ -100,11 +104,13 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [isCloseSuccess, closeHash]);
 
   useEffect(() => {
-    if (closeError) {
+    if (closeError && closeError !== prevCloseError.current) {
+      const msg = closeError.message;
       toast.error('Failed to close contest', {
-        description: closeError.message.slice(0, 100),
+        description: msg.length > 100 ? `${msg.slice(0, 100)}...` : msg,
       });
     }
+    prevCloseError.current = closeError;
   }, [closeError]);
 
   const handleRequestRandomness = () => {
