@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { formatEther } from 'viem';
 import {
@@ -10,15 +10,18 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
+import { toast } from 'sonner';
 
 import { firstBloodContestAbi } from '@sovereign/onchain';
-import { CURRENCY } from '../../../lib/chain-config';
+import { CURRENCY, getExplorerTxUrl } from '../../../lib/chain-config';
 import { useContest, useContestCommitment, useContestWinners } from '../../../hooks/use-contests';
 import { useContractAddress } from '../../../hooks/use-contract-address';
 import { ConnectWallet } from '../../../components/connect-wallet';
 import { ContestTimeline } from '../../../components/contest-timeline';
 import { BlockCountdown } from '../../../components/block-countdown';
 import { CommitSolutionForm } from '../../../components/commit-solution-form';
+import { Spinner } from '../../../components/spinner';
+import { ContestDetailSkeleton, SidebarSkeleton, Skeleton } from '../../../components/skeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +59,60 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     hash: closeHash,
   });
 
+  // Track previous values to detect state changes
+  const prevCaptureSuccess = useRef(false);
+  const prevCloseSuccess = useRef(false);
+  const prevCaptureError = useRef<Error | null>(null);
+  const prevCloseError = useRef<Error | null>(null);
+
+  // Toast notifications for randomness request
+  useEffect(() => {
+    if (isCaptureSuccess && captureHash && !prevCaptureSuccess.current) {
+      toast.success('Randomness requested!', {
+        description: 'Waiting for VRF fulfillment...',
+        action: {
+          label: 'View',
+          onClick: () => window.open(getExplorerTxUrl(captureHash), '_blank'),
+        },
+      });
+    }
+    prevCaptureSuccess.current = isCaptureSuccess;
+  }, [isCaptureSuccess, captureHash]);
+
+  useEffect(() => {
+    if (captureError && captureError !== prevCaptureError.current) {
+      const msg = captureError.message;
+      toast.error('Failed to request randomness', {
+        description: msg.length > 100 ? `${msg.slice(0, 100)}...` : msg,
+      });
+    }
+    prevCaptureError.current = captureError;
+  }, [captureError]);
+
+  // Toast notifications for close contest
+  useEffect(() => {
+    if (isCloseSuccess && closeHash && !prevCloseSuccess.current) {
+      toast.success('Contest closed!', {
+        description: 'The contest has been finalized.',
+        action: {
+          label: 'View',
+          onClick: () => window.open(getExplorerTxUrl(closeHash), '_blank'),
+        },
+      });
+    }
+    prevCloseSuccess.current = isCloseSuccess;
+  }, [isCloseSuccess, closeHash]);
+
+  useEffect(() => {
+    if (closeError && closeError !== prevCloseError.current) {
+      const msg = closeError.message;
+      toast.error('Failed to close contest', {
+        description: msg.length > 100 ? `${msg.slice(0, 100)}...` : msg,
+      });
+    }
+    prevCloseError.current = closeError;
+  }, [closeError]);
+
   const handleRequestRandomness = () => {
     if (!contractAddress) return;
     writeCaptureRandomness({
@@ -80,7 +137,32 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
         <div className="max-w-4xl mx-auto px-4 py-10">
-          <div className="text-center py-20 text-slate-600">Loading contest...</div>
+          {/* Header skeleton */}
+          <header className="mb-8 flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <Skeleton className="h-8 w-8 rounded-lg" />
+              <div>
+                <Skeleton className="h-9 w-40 mb-2" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-32 rounded-lg" />
+          </header>
+
+          {/* Timeline skeleton */}
+          <div className="mb-8">
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <ContestDetailSkeleton />
+            </div>
+            <div>
+              <SidebarSkeleton />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -207,18 +289,29 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       <button
                         onClick={handleRequestRandomness}
                         disabled={isCapturePending || isCaptureConfirming || !canCaptureRandomness}
-                        className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
+                        {(isCapturePending || isCaptureConfirming) && <Spinner size="sm" />}
                         {isCapturePending
                           ? 'Confirming...'
                           : isCaptureConfirming
                             ? 'Processing...'
                             : 'Request Randomness'}
                       </button>
-                      {isCaptureSuccess && (
-                        <p className="text-sm text-green-600">
-                          Randomness requested! Waiting for VRF fulfillment...
-                        </p>
+                      {isCaptureSuccess && captureHash && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-green-600">
+                            Randomness requested! Waiting for VRF fulfillment...
+                          </p>
+                          <a
+                            href={getExplorerTxUrl(captureHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-amber-600 hover:text-amber-700"
+                          >
+                            View →
+                          </a>
+                        </div>
                       )}
                       {captureError && (
                         <div className="p-2 bg-red-50 rounded-lg">
@@ -397,6 +490,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   contestState={state.state}
                   globalSeed={state.globalSeed}
                   size={params_.size}
+                  {...(commitment ? { onChainCommitment: commitment } : {})}
                 />
               )}
 
@@ -460,16 +554,27 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       <button
                         onClick={handleCloseContest}
                         disabled={isClosePending || isCloseConfirming}
-                        className="w-full px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
+                        {(isClosePending || isCloseConfirming) && <Spinner size="sm" />}
                         {isClosePending
                           ? 'Confirming...'
                           : isCloseConfirming
                             ? 'Processing...'
                             : 'Close Contest'}
                       </button>
-                      {isCloseSuccess && (
-                        <p className="text-sm text-green-600">Contest closed successfully!</p>
+                      {isCloseSuccess && closeHash && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-green-600">Contest closed successfully!</p>
+                          <a
+                            href={getExplorerTxUrl(closeHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-amber-600 hover:text-amber-700"
+                          >
+                            View →
+                          </a>
+                        </div>
                       )}
                       {closeError && (
                         <div className="p-2 bg-red-50 rounded-lg">

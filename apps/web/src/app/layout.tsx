@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { Web3Provider } from '../providers/web3-provider';
+import { ToastProvider } from '../providers/toast-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
       <body>
-        <Web3Provider>{children}</Web3Provider>
+        <Web3Provider>
+          <ToastProvider>{children}</ToastProvider>
+        </Web3Provider>
       </body>
     </html>
   );

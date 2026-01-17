@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { formatEther } from 'viem';
 import { useConnection } from 'wagmi';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 import { useCommitStorage, generateSalt } from '../hooks/use-commit-storage';
 import { generateCommitHashFromBoard } from '../lib/commit-hash';
@@ -12,9 +13,16 @@ import { useSolvedBoardStorage } from '../hooks/use-solved-board-storage';
 import { CommitConfirmationModal } from './commit-confirmation-modal';
 import { SaltBackupButton } from './salt-backup-button';
 import { Grid } from './grid';
+import { Spinner } from './spinner';
 import { useBoard } from '../hooks/use-board';
 import { decodeBoard, type BoardState } from '@sovereign/engine';
 import { getExplorerTxUrl, CURRENCY } from '../lib/chain-config';
+
+interface Commitment {
+  commitHash: `0x${string}`;
+  committedAt: bigint;
+  depositPaid: bigint;
+}
 
 interface CommitSolutionFormProps {
   contestId: bigint;
@@ -22,6 +30,7 @@ interface CommitSolutionFormProps {
   contestState: number; // Contest state (2 = CommitOpen)
   globalSeed: `0x${string}`;
   size: number;
+  onChainCommitment?: Commitment;
 }
 
 const extractErrorReason = (error: Error | null, entryDepositWei: bigint): string => {
@@ -54,16 +63,44 @@ export const CommitSolutionForm = ({
   contestState,
   globalSeed,
   size,
+  onChainCommitment,
 }: CommitSolutionFormProps) => {
   const { address, status } = useConnection();
   const isConnected = status === 'connected';
 
   const { getSolvedBoard } = useSolvedBoardStorage();
-  const { storeCommitData, getCommitData } = useCommitStorage();
+  const { storeCommitData } = useCommitStorage();
   const { commit, hash, isPending, isConfirming, isSuccess, error } = useCommitSolution();
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [decodedBoard, setDecodedBoard] = useState<BoardState | null>(null);
+
+  // Track previous values to detect state changes
+  const prevSuccess = useRef(false);
+  const prevError = useRef<Error | null>(null);
+
+  // Toast notifications for commit
+  useEffect(() => {
+    if (isSuccess && hash && !prevSuccess.current) {
+      toast.success('Solution committed!', {
+        description: `Your solution for Contest #${contestId.toString()} has been submitted.`,
+        action: {
+          label: 'View',
+          onClick: () => window.open(getExplorerTxUrl(hash), '_blank'),
+        },
+      });
+    }
+    prevSuccess.current = isSuccess;
+  }, [isSuccess, hash, contestId]);
+
+  useEffect(() => {
+    if (error && error !== prevError.current) {
+      toast.error('Failed to commit solution', {
+        description: extractErrorReason(error, entryDepositWei),
+      });
+    }
+    prevError.current = error;
+  }, [error, entryDepositWei]);
 
   const {
     board: puzzleBoard,
@@ -96,8 +133,8 @@ export const CommitSolutionForm = ({
     : puzzleValidation.isComplete && puzzleValidation.isValid;
 
   const isCommitWindowOpen = contestState === 2;
-  const storedCommit = getCommitData(contestId);
-  const hasCommitted = storedCommit !== null;
+  // Use on-chain commitment as authoritative source (local storage is only for salt backup)
+  const hasCommittedOnChain = onChainCommitment && onChainCommitment.committedAt > 0n;
   const entryDeposit = formatEther(entryDepositWei);
 
   const handleCommit = () => {
@@ -161,7 +198,7 @@ export const CommitSolutionForm = ({
     );
   }
 
-  if (hasCommitted) {
+  if (hasCommittedOnChain) {
     return (
       <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
         <div className="space-y-4">
@@ -170,7 +207,7 @@ export const CommitSolutionForm = ({
             <span className="font-semibold">Already Committed</span>
           </div>
           <p className="text-sm text-slate-600">
-            You committed your solution at {new Date(storedCommit!.committedAt).toLocaleString()}.
+            You committed your solution at block {onChainCommitment.committedAt.toString()}.
           </p>
           <SaltBackupButton contestId={contestId} />
         </div>
@@ -290,8 +327,9 @@ export const CommitSolutionForm = ({
             <button
               onClick={handleCommit}
               disabled={!isSolutionValid || isPending || isConfirming}
-              className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
+              {(isPending || isConfirming) && <Spinner size="md" />}
               {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Commit Solution'}
             </button>
 
