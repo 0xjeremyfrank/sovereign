@@ -53,4 +53,88 @@ forge test                   # Contract tests (from contracts/)
 ## Git Workflow
 
 - Branch naming: `feat/`, `fix/`, `chore/`
+- Commit messages: conventional commits (`feat:`, `fix:`, `chore:`, `docs:`)
+- PRs should reference related issues (`Closes #123`)
+
+## Agent-Driven Development
+
+This project uses an AI-assisted development workflow with GitHub as the source of truth for project management.
+
+### GitHub Structure
+
+**Milestones** (sequential phases):
+- M1: Testnet MVP — Core gameplay loop on Sepolia
+- M2: Polish & UX — Mobile, accessibility, animations
+- M3: Production Deployment — Multi-chain support, Base mainnet
+- M4: Automation & Indexing — Chainlink Automation, The Graph
+
+**Labels** (categorization):
+- `ui`, `onchain`, `logic` — Component area
+- `enhancement`, `bug`, `documentation` — Issue type
+- `P1`, `P2`, `P3` — Priority level
+- `good first issue` — Suitable for newcomers
+
+**Project Board**: Track issue status (Todo → In Progress → Done)
+
+### Workflow for AI Agents
+
+1. **Start of session**: Review current milestone and open issues
+   ```bash
+   gh issue list --milestone "M1: Testnet MVP" --state open
+   gh project item-list 2 --owner @me
+   ```
+
+2. **Pick work**: Select an issue from current milestone, assign yourself
+   ```bash
+   gh issue edit <number> --add-assignee @me
+   ```
+
+3. **Create branch**: Branch from main with appropriate prefix
+   ```bash
+   git checkout -b feat/issue-description
+   ```
+
+4. **Implement**: Follow code style, write tests, keep changes focused
+
+5. **Commit**: Use conventional commits, reference issue
+   ```bash
+   git commit -m "feat(web): implement reveal solution UI
+
+   Closes #36"
+   ```
+
+6. **PR creation**: Link to issue, describe changes, request review
+   ```bash
+   gh pr create --title "feat(web): implement reveal solution UI" \
+     --body "Closes #36\n\n## Summary\n..." --base main
+   ```
+
+7. **Update project board**: Move issue to appropriate column
+
+### Issue Management Commands
+
+```bash
+# List open issues by milestone
+gh issue list --milestone "M1: Testnet MVP" --state open
+
+# List all milestones
+gh api repos/{owner}/{repo}/milestones --jq '.[] | "\(.number): \(.title) (\(.open_issues) open)"'
+
+# Create new issue
+gh issue create --title "Title" --body "Description" --label "ui" --milestone "M1: Testnet MVP"
+
+# Update issue status on project board
+gh project item-edit --id <item-id> --project-id <project-id> --field-id <status-field-id> --single-select-option-id <option-id>
+
+# View project board items
+gh project item-list 2 --owner @me --format json | jq '.items[] | {title, status}'
+```
+
+### Session Checklist
+
+- [ ] Check current milestone progress
+- [ ] Review any PR feedback or blocked issues
+- [ ] Pick next issue from current milestone
+- [ ] Verify tests pass before committing
+- [ ] Update project board after PR merge
 
