@@ -11,6 +11,9 @@ export const useRevealSolution = () => {
     hash,
   });
 
+  // Check if the hook is ready to be used (contract address is configured)
+  const isReady = !!contractAddress;
+
   const reveal = (contestId: bigint, encodedSolution: `0x${string}`, salt: `0x${string}`) => {
     if (!contractAddress) {
       throw new Error(`Contract address not configured for chain ${chainId}`);
@@ -30,6 +33,7 @@ export const useRevealSolution = () => {
     isPending,
     isConfirming,
     isSuccess,
+    isReady,
     error,
   };
 };

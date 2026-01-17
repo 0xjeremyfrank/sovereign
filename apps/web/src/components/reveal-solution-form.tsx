@@ -74,7 +74,7 @@ export const RevealSolutionForm = ({
   const { data: currentBlock } = useBlockNumber({ chainId, watch: true });
 
   const { getCommitData } = useCommitStorage();
-  const { reveal, hash, isPending, isConfirming, isSuccess, error } = useRevealSolution();
+  const { reveal, hash, isPending, isConfirming, isSuccess, isReady, error } = useRevealSolution();
   const { data: hasRevealedOnChain, refetch: refetchHasRevealed } = useHasRevealed(contestId, address);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -108,6 +108,11 @@ export const RevealSolutionForm = ({
   const commitData = getCommitData(contestId);
   const hasCommitData = commitData !== null;
 
+  // Defensive check for invalid contest data
+  if (topN === 0) {
+    return null;
+  }
+
   const commitBufferEndsAt = randomnessCapturedAt > 0n ? randomnessCapturedAt + commitBuffer : 0n;
   const isCommitBufferActive = currentBlock && commitBufferEndsAt > 0n && currentBlock < commitBufferEndsAt;
   const isRevealWindowOpen = contestState === 3 || (contestState === 2 && !isCommitBufferActive);
@@ -115,7 +120,8 @@ export const RevealSolutionForm = ({
   const isContestFull = winnerCount >= topN;
 
   const potentialReward = prizePoolWei / BigInt(topN);
-  const expectedRank = winnerCount + 1;
+  // Note: This is an estimated rank that may differ due to concurrent reveals
+  const potentialRank = winnerCount + 1;
 
   const handleReveal = () => {
     if (!isConnected || !address || !commitData) {
@@ -147,8 +153,8 @@ export const RevealSolutionForm = ({
             Your solution for Contest #{contestId.toString()} has been verified!
           </p>
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-700 mb-1">Expected Rank</p>
-            <p className="text-2xl font-bold text-green-600">#{expectedRank}</p>
+            <p className="text-sm text-green-700 mb-1">Potential Rank</p>
+            <p className="text-2xl font-bold text-green-600">#{potentialRank}</p>
             <p className="text-sm text-green-700 mt-2">Reward</p>
             <p className="text-xl font-bold text-green-600">{formatEther(potentialReward)} {CURRENCY.symbol}</p>
           </div>
@@ -256,7 +262,7 @@ export const RevealSolutionForm = ({
         contestId={contestId}
         depositPaid={depositPaid}
         potentialReward={potentialReward}
-        expectedRank={expectedRank}
+        potentialRank={potentialRank}
       />
 
       <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
@@ -293,8 +299,8 @@ export const RevealSolutionForm = ({
               <span className="font-semibold text-green-600">{formatEther(potentialReward)} {CURRENCY.symbol}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Expected Rank</span>
-              <span className="font-semibold">#{expectedRank} of {topN}</span>
+              <span className="text-slate-600">Potential Rank</span>
+              <span className="font-semibold">#{potentialRank} of {topN}</span>
             </div>
             {depositPaid > 0n && (
               <div className="flex justify-between">
@@ -320,7 +326,7 @@ export const RevealSolutionForm = ({
 
         <button
           onClick={handleReveal}
-          disabled={isCommitBufferActive || isPending || isConfirming || !isRevealWindowOpen}
+          disabled={!isReady || isCommitBufferActive || isPending || isConfirming || !isRevealWindowOpen}
           className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {(isPending || isConfirming) && <Spinner size="md" />}

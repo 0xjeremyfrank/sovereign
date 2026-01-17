@@ -180,19 +180,52 @@ gh api graphql -f query='
     }
   }}'
 
+# Add blocked-by relationship (A is blocked by B)
+gh api graphql -f query='
+  mutation {
+    addBlockedBy(input: {
+      issueId: "<BLOCKED_ISSUE_NODE_ID>"
+      blockingIssueId: "<BLOCKING_ISSUE_NODE_ID>"
+    }) {
+      issue { number title }
+      blockingIssue { number title }
+    }
+  }'
+
+# Remove blocked-by relationship
+gh api graphql -f query='
+  mutation {
+    removeBlockedBy(input: {
+      issueId: "<BLOCKED_ISSUE_NODE_ID>"
+      blockingIssueId: "<BLOCKING_ISSUE_NODE_ID>"
+    }) {
+      issue { number title }
+    }
+  }'
+
+# View issue with blocking relationships
+gh api graphql -f query='
+  query { repository(owner: "0xjeremyfrank", name: "sovereign") {
+    issue(number: <NUM>) {
+      title
+      blockedBy(first: 10) { nodes { number title } }
+      blocking(first: 10) { nodes { number title } }
+    }
+  }}'
+
 # List all blocked issues
 gh issue list --label "blocked" --state open
 ```
 
 **Workflow for Dependencies**:
-1. When an issue depends on another, add it as sub-issue of the blocker
+1. Add `blockedBy` relationship between dependent issues
 2. Add `blocked` label to dependent issue for visibility
-3. When blocker is resolved, remove `blocked` label from dependent
+3. When blocker is resolved, remove relationship and `blocked` label
 4. Check for blocked issues before starting work
 
 **Conventions**:
-- Epic issues are parents of their task breakdowns
-- For A blocks B: make B a sub-issue of A, add `blocked` label to B
+- Epic issues are parents of their task breakdowns (use sub-issues)
+- For blocking dependencies, use `addBlockedBy` mutation + `blocked` label
 - Document blocking reason in issue comment when adding relationship
 
 ### Session Checklist
