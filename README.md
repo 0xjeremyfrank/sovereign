@@ -5,16 +5,23 @@ Blockchain-native logic puzzle inspired by the classic n-Queens problem.
 - Daily deterministic puzzles with on-chain verification
 - Commit–reveal verification and collectible rewards (NFT/SBT)
 
-## Monorepo Structure (planned)
+## Structure
 
-- apps/web — Next.js UI
-- packages/engine — Puzzle engine (TypeScript)
-- packages/config — Shared lint/TS configs
+- `apps/web` — Next.js 14 (App Router) frontend
+- `packages/engine` — Puzzle generation and validation
+- `packages/onchain` — ABIs and contract addresses
+- `contracts/` — Solidity smart contracts (Foundry)
+- `docs/` — Documentation
 
-## Blockchain integration (planned)
+## Blockchain Integration
 
-- contracts — Solidity (Foundry), deployed on Autonomys Network (Auto EVM)
-- storage - Autonomys Network (Auto Drive)
+**Implemented:**
+- Chainlink VRF for verifiable random seed generation
+- Commit-reveal contest flow with on-chain verification
+
+**Investigating:**
+- Chainlink Automation for scheduled puzzle releases
+- Chainlink Runtime Environment (CRE) workflows
 
 ## Development
 
