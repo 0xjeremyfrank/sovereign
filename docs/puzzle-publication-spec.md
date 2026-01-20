@@ -4,99 +4,72 @@ How to get a verifiable puzzle on-chain for solution validation.
 
 ---
 
-## Open Design Questions
+## Design Decisions
 
-Before implementation, these decisions need to be made:
+### 1. Region Map Storage: On-Chain
 
-### 1. Region Map Storage Strategy
+Sponsor calls `publishPuzzle()` once, storing the full region map on-chain.
 
-**Option A: Store on-chain (Recommended)**
-- Sponsor calls `publishPuzzle()` once, stores full region map
 - ~200k gas one-time cost (100 bytes = 4 storage slots for 10x10)
 - Reveals don't need to include region map
 - Simpler reveal calldata
+- Better UX for players; gas cost is sponsor's responsibility
 
-**Option B: Calldata each reveal**
-- Sponsor only publishes `puzzleHash`
-- Each reveal includes full region map (~1,600 gas calldata)
-- Contract verifies `keccak256(regionMap) == puzzleHash`
-- No storage cost, but repeated calldata
+*Alternative considered:* Calldata each reveal — rejected due to worse player UX and repeated calldata costs.
 
-**Recommendation:** Option A — better UX for players, gas cost is sponsor's responsibility.
+### 2. Puzzle Publisher: Sponsor Only
 
-### 2. Who Can Publish the Puzzle?
+Only the contest sponsor can publish the puzzle via `onlySponsor` modifier.
 
-**Option A: Sponsor only (Recommended)**
-- Simple access control via `onlySponsor` modifier
+- Simple access control
 - Clear accountability
 - Sponsor already has skin in the game (prize pool)
 
-**Option B: Anyone with valid region map**
-- Permissionless, removes sponsor from critical path
-- Requires on-chain verification that region map matches seed
-- Verification is complex (would need to run puzzle generation on-chain or use fraud proofs)
+*Alternative considered:* Permissionless publication — rejected due to complexity of on-chain verification that region map matches seed.
 
-**Recommendation:** Option A for MVP. Consider keeper automation in M4.
+### 3. Puzzle Publication Deadline: 100 Blocks (~20 minutes)
 
-### 3. Puzzle Publication Deadline
+Sponsor has 100 blocks after VRF fulfillment to publish the puzzle.
 
-How long does sponsor have to publish after VRF fulfillment?
+| Considered | Blocks | Time | Decision |
+|------------|--------|------|----------|
+| Tight | 50 | ~10 min | Too risky |
+| **Medium** | **100** | **~20 min** | **Selected** |
+| Relaxed | 300 | ~1 hour | Delays contest too long |
 
-| Option | Blocks | Time (~12s/block) | Tradeoff |
-|--------|--------|-------------------|----------|
-| Tight | 50 | ~10 minutes | Risk of missing deadline |
-| Medium | 100 | ~20 minutes | Balanced |
-| Relaxed | 300 | ~1 hour | Delays contest start |
+Sponsor should be watching for VRF fulfillment and ready to publish promptly.
 
-**Recommendation:** 100 blocks. Sponsor should be watching for VRF fulfillment.
+### 4. Failure Mode: Auto-Cancel with Full Refund
 
-### 4. Failure Mode: Puzzle Not Published
+If sponsor doesn't publish puzzle within deadline:
 
-What happens if sponsor doesn't publish within deadline?
-
-**Option A: Auto-cancel, refund all (Recommended)**
 - Contest transitions to `Cancelled` state
-- All committed deposits refunded
-- Prize pool returned to sponsor
-- Clean failure mode
+- All committed deposits refunded via `refundCancelledDeposit()`
+- Prize pool returned to sponsor via `withdrawCancelledPrize()`
+- Clean, fair failure mode
 
-**Option B: Allow late publication**
-- Sponsor can still publish after deadline
-- But players who committed may have left
-- Messy UX
+*Alternatives considered:*
+- Allow late publication — rejected due to poor UX (players may have left)
+- Slash sponsor stake — rejected as too complex for MVP
 
-**Option C: Slash sponsor stake**
-- Require sponsor bond at contest creation
-- Forfeit bond if puzzle not published
-- Adds complexity
+### 5. Puzzle Verification: Off-Chain Only (No On-Chain Enforcement)
 
-**Recommendation:** Option A for MVP. Simple and fair.
+No on-chain mechanism to challenge an invalid puzzle for MVP.
 
-### 5. Puzzle Verification (Off-chain Challenge)
+- Puzzle generation is deterministic from seed
+- Anyone can verify off-chain that published region map matches expected generation
+- A cheating sponsor would be immediately obvious and lose reputation
+- Social layer enforcement is sufficient for MVP
 
-Should there be a mechanism to challenge an invalid puzzle?
+*Future consideration:* Add fraud proof mechanism or on-chain verification in later milestones.
 
-**Context:** Sponsor could theoretically publish a region map that doesn't match the deterministic generation from the seed. Players would notice (they generate locally), but there's no on-chain enforcement.
+### 6. Commit Gating: Require Puzzle Published
 
-**Options:**
-- **No enforcement:** Trust social layer. Sponsor's reputation at stake.
-- **Challenge period:** Anyone can call `challengePuzzle()` with proof of mismatch.
-- **Optimistic verification:** Accept puzzle, allow challenge within N blocks.
+Commits are blocked until puzzle is published. `commitSolution()` requires `puzzleHash != 0`.
 
-**Recommendation:** No enforcement for MVP. Puzzle generation is deterministic — anyone can verify off-chain. A cheating sponsor would be immediately obvious and lose reputation.
-
-### 6. State Transition: When Do Commits Open?
-
-Currently: Commits open immediately after VRF fulfillment.
-
-**Problem:** If puzzle isn't published yet, players can't actually solve it (they need the region map to verify their solution locally before committing).
-
-**Options:**
-- **A: Keep current flow** — Players wait for `PuzzlePublished` event before committing
-- **B: New state** — Add `PuzzlePublished` state between `CommitOpen` and actual commits
-- **C: Block commits until puzzle published** — Require `puzzleHash != 0` in `commitSolution()`
-
-**Recommendation:** Option C — minimal change, enforces correct ordering.
+- Minimal contract change
+- Enforces correct ordering (can't commit before puzzle exists)
+- Players always have region map available when committing
 
 ---
 
@@ -623,9 +596,88 @@ function decodeSolution(bytes: Uint8Array): number[] {
 
 ---
 
-## Future Enhancements (M4)
+## Future Work
 
-1. **Chainlink Automation** — Auto-publish puzzle via keeper
-2. **Region map packing** — 4 bits per cell (50 bytes vs 100 for 10x10)
-3. **Fraud proofs** — Challenge invalid puzzle publication
-4. **On-chain verification** — Verify region map matches seed (complex)
+Items deferred from MVP to be addressed in later milestones.
+
+### Puzzle Generation Validation (M2/M3)
+
+The current design trusts the sponsor to publish a correctly-generated puzzle. Future enhancements should add verification:
+
+1. **Deterministic generation verification** — Ensure the published region map is the correct output of `generateLogicSolvablePuzzle(seed, size)`. Options:
+   - Off-chain verification service that attests to correctness
+   - Fraud proof: anyone can challenge with proof of mismatch
+   - On-chain lightweight verification (if feasible)
+
+2. **Uniqueness validation** — Verify the puzzle has exactly one solution. Currently enforced by generation algorithm but not verified on-chain.
+
+3. **Logic-solvability validation** — Verify the puzzle is solvable without guessing. Currently a property of the hill-climbing generator but not verified on-chain.
+
+4. **Region connectivity validation** — Ensure each region forms a connected group (no isolated cells). Currently enforced by generation but could be verified.
+
+### Automation (M4)
+
+1. **Chainlink Automation for puzzle publication** — Remove sponsor from critical path by having a keeper automatically publish the puzzle after VRF fulfillment. Requires:
+   - Keeper-compatible puzzle generation (deterministic, reproducible)
+   - Funding mechanism for keeper gas costs
+   - Fallback if keeper fails
+
+2. **Automated contest lifecycle** — Keepers could also handle:
+   - Transitioning state when deadlines pass
+   - Calling `cancelUnpublishedContest()` if needed
+   - Finalizing contests after reveal window
+
+### Gas Optimizations (M3/M4)
+
+1. **Region map packing** — Store region IDs in 4 bits instead of 8 bits:
+   - Region IDs are 0-9, fit in 4 bits
+   - 100 cells × 4 bits = 50 bytes (vs 100 bytes currently)
+   - Saves ~100k gas on `publishPuzzle()`
+   - Requires bitwise unpacking in validation loop
+
+2. **Assembly optimization** — Rewrite `_validateSolution()` hot loop in assembly:
+   - Estimated savings: ~2,000 gas per reveal
+   - Trade-off: reduced readability and auditability
+
+3. **Batch operations** — Allow multiple reveals in single transaction for gas savings on base costs.
+
+### Security Enhancements (M3/M4)
+
+1. **Fraud proof system** — Allow anyone to challenge an invalid puzzle:
+   - Challenger posts bond
+   - Submits proof that region map doesn't match deterministic generation from seed
+   - If valid challenge: contest cancelled, challenger rewarded
+   - If invalid challenge: challenger loses bond
+   - Requires deterministic puzzle generation that can be verified
+
+2. **Sponsor staking** — Require sponsors to post a bond at contest creation:
+   - Bond slashed if puzzle not published on time
+   - Bond slashed if puzzle proven invalid
+   - Creates economic incentive for correct behavior
+
+3. **Multi-sig sponsor** — Allow multiple parties to act as sponsor:
+   - Any authorized party can publish puzzle
+   - Reduces single point of failure
+
+### Alternative Validation Approaches (M4+)
+
+1. **ZK proof verification** — Player generates proof that solution is valid without revealing it:
+   - Enables trustless validation without sponsor publishing puzzle
+   - ~200-300k gas for Groth16 verification
+   - Significant circuit development effort
+   - Best for scenarios requiring maximum trustlessness
+
+2. **Optimistic validation with fraud proofs** — Accept solutions optimistically, allow challenges:
+   - Lower gas in happy path
+   - Adds dispute delay before payouts
+   - Conflicts with "first blood" instant gratification
+
+### UX Improvements (M2)
+
+1. **Puzzle publication notification** — Alert sponsor when VRF fulfills so they can publish promptly.
+
+2. **Automatic puzzle encoding** — Frontend generates and encodes region map automatically after VRF.
+
+3. **IPFS backup** — Store region map on IPFS as backup retrieval method (already partially specified with `regionMapCid` parameter).
+
+4. **Solution format migration** — Smooth transition from base64 JSON to packed bytes format for existing users.

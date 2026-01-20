@@ -528,10 +528,10 @@ function revealSolution(
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. Store region map on-chain (Option B) or require in calldata (Option A)?
-   - Recommend: Option B (store on-chain) for better player UX
-2. What timeout for puzzle publication?
-   - Suggest: Must publish before first commit, or within N blocks of VRF
-3. Should we emit valid solution after contest closes (transparency)?
+1. **Region map storage:** Store on-chain. Sponsor calls `publishPuzzle()` once; players don't need to submit region map with each reveal. Better UX, gas cost is sponsor's responsibility.
+
+2. **Puzzle publication timeout:** 100 blocks (~20 minutes) after VRF fulfillment. Sponsor must publish before commits are accepted (`commitSolution()` requires `puzzleHash != 0`).
+
+3. **Solution transparency:** Deferred to future work. Could emit valid solution after contest closes for transparency, but not required for MVP functionality.
