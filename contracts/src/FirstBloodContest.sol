@@ -349,9 +349,11 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         }
 
         // Validate region IDs are in range [0, size-1]
-        for (uint256 i = 0; i < regionMap.length; i++) {
-            if (uint8(regionMap[i]) >= params.size) {
-                revert InvalidRegionId(i, uint8(regionMap[i]), params.size);
+        uint256 len = regionMap.length;
+        uint8 boardSize = params.size;
+        for (uint256 i = 0; i < len; i++) {
+            if (uint8(regionMap[i]) >= boardSize) {
+                revert InvalidRegionId(i, uint8(regionMap[i]), boardSize);
             }
         }
 
@@ -608,13 +610,13 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
 
             // Column uniqueness: check and set bit
             uint256 colBit = 1 << col;
-            if (colBitmap & colBit != 0) return false;
+            if ((colBitmap & colBit) != 0) return false;
             colBitmap |= colBit;
 
             // Region uniqueness: check and set bit
             uint8 regId = uint8(regionMap[uint256(row) * size + col]);
             uint256 regBit = 1 << regId;
-            if (regBitmap & regBit != 0) return false;
+            if ((regBitmap & regBit) != 0) return false;
             regBitmap |= regBit;
 
             // Adjacency: sovereigns in consecutive rows can't be within 1 column
