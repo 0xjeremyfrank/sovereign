@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { formatEther, toHex } from 'viem';
+import { formatEther } from 'viem';
 import { useConnection, useBlockNumber, useChainId } from 'wagmi';
 import { toast } from 'sonner';
 
@@ -136,9 +136,8 @@ export const RevealSolutionForm = ({
     }
 
     const { encodedSolution, salt } = commitData;
-    const solutionBytes = toHex(encodedSolution);
-
-    reveal(contestId, solutionBytes, salt as `0x${string}`);
+    // encodedSolution is already a hex string (0x...)
+    reveal(contestId, encodedSolution as `0x${string}`, salt as `0x${string}`);
     setShowConfirmation(false);
   };
 

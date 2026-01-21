@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useChainId } from 'wagmi';
 import { useConnection } from 'wagmi';
-import { keccak256, toBytes } from 'viem';
+import { keccak256 } from 'viem';
 import { encodeBoard, type BoardState } from '@sovereign/engine';
 
 const STORAGE_PREFIX = 'sovereign_commit';
@@ -38,9 +38,10 @@ export const useCommitStorage = () => {
 
       if (typeof window === 'undefined') return;
 
+      // encodeBoard returns a hex string (0x...) of packed column indices
       const encodedSolution = encodeBoard(board);
-      const solutionBytes = toBytes(encodedSolution);
-      const solutionHash = keccak256(solutionBytes);
+      // keccak256 can directly hash hex strings
+      const solutionHash = keccak256(encodedSolution);
 
       const data: StoredCommitData = {
         contestId: contestId.toString(),
