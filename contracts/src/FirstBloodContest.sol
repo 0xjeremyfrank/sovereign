@@ -16,7 +16,12 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         CommitOpen,
         RevealOpen,
         Closed,
-        Finalized
+        Finalized,
+        Cancelled
+    }
+
+    enum CancelReason {
+        PuzzleNotPublished
     }
 
     struct ContestParams {
@@ -40,6 +45,7 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         uint256 randomnessCapturedAt; // Block number when seed was captured
         uint256 commitWindowEndsAt; // Block number
         uint256 revealWindowEndsAt; // Block number
+        uint256 puzzlePublishDeadline; // Block number deadline for puzzle publication
         uint8 winnerCount; // Current number of valid reveals
         uint256 remainingPrizeWei;
         uint256 forfeitedDepositsWei;
@@ -65,8 +71,14 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
     mapping(uint256 => mapping(address => Commitment)) public commits; // contestId => solver => commitment
     mapping(uint256 => Winner[]) public winners; // contestId => ordered winners
     mapping(uint256 => mapping(address => bool)) public hasRevealed; // contestId => solver => revealed
+    mapping(uint256 => bytes) public regionMaps; // contestId => packed region IDs (1 byte per cell)
 
     uint256 public nextContestId;
+
+    // ============ Constants ============
+
+    /// @notice Blocks after VRF fulfillment for sponsor to publish puzzle
+    uint256 public constant PUZZLE_PUBLISH_WINDOW = 100;
 
     // ============ VRF Configuration ============
 
@@ -117,6 +129,15 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
     error WithdrawalFailed(address recipient, uint256 amount);
     error VRFRequestNotFound(uint256 requestId);
     error ContestNotRandomnessPending(uint256 contestId, ContestState state);
+    error PuzzleAlreadyPublished(uint256 contestId);
+    error PuzzlePublishDeadlinePassed(uint256 contestId, uint256 deadline);
+    error InvalidRegionMapLength(uint256 actual, uint256 expected);
+    error InvalidRegionId(uint256 index, uint8 regionId, uint8 maxRegion);
+    error PuzzleNotPublished(uint256 contestId);
+    error PuzzlePublishDeadlineNotPassed(uint256 contestId, uint256 deadline);
+    error ContestNotCancelled(uint256 contestId);
+    error NoDepositToRefund(uint256 contestId, address solver);
+    error InvalidSolutionLength(uint256 actual, uint256 expected);
 
     // ============ Events ============
 
@@ -147,6 +168,10 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
     );
 
     event PrizeWithdrawn(uint256 indexed contestId, address indexed solver, uint256 amount);
+
+    event ContestCancelled(uint256 indexed contestId, CancelReason reason);
+
+    event DepositRefunded(uint256 indexed contestId, address indexed solver, uint256 amount);
 
     // ============ Modifiers ============
 
@@ -208,6 +233,7 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
             randomnessCapturedAt: 0,
             commitWindowEndsAt: 0,
             revealWindowEndsAt: 0,
+            puzzlePublishDeadline: 0,
             winnerCount: 0,
             remainingPrizeWei: params.prizePoolWei,
             forfeitedDepositsWei: 0
@@ -284,9 +310,56 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         state.randomnessCapturedAt = block.number;
         state.commitWindowEndsAt = block.number + commitWindow;
         state.revealWindowEndsAt = state.commitWindowEndsAt + revealWindow;
+        state.puzzlePublishDeadline = block.number + PUZZLE_PUBLISH_WINDOW;
         state.state = ContestState.CommitOpen;
 
         emit RandomnessFulfilled(contestId, requestId, globalSeed);
+    }
+
+    /// @notice Sponsor publishes the puzzle region map after VRF fulfillment
+    /// @param contestId The contest ID
+    /// @param regionMap Packed region IDs (1 byte per cell, row-major order)
+    /// @param regionMapCid IPFS CID for off-chain retrieval (optional, for frontend)
+    function publishPuzzle(uint256 contestId, bytes calldata regionMap, string calldata regionMapCid)
+        external
+        onlySponsor(contestId)
+    {
+        ContestStateData storage state = contestStates[contestId];
+        ContestParams storage params = contests[contestId];
+
+        // Must be in CommitOpen state (after VRF fulfilled)
+        if (state.state != ContestState.CommitOpen) {
+            revert CommitsNotOpen(contestId, state.state);
+        }
+
+        // Puzzle not already published
+        if (state.puzzleHash != bytes32(0)) {
+            revert PuzzleAlreadyPublished(contestId);
+        }
+
+        // Within deadline
+        if (block.number > state.puzzlePublishDeadline) {
+            revert PuzzlePublishDeadlinePassed(contestId, state.puzzlePublishDeadline);
+        }
+
+        // Validate region map length
+        uint256 expectedLength = uint256(params.size) * uint256(params.size);
+        if (regionMap.length != expectedLength) {
+            revert InvalidRegionMapLength(regionMap.length, expectedLength);
+        }
+
+        // Validate region IDs are in range [0, size-1]
+        for (uint256 i = 0; i < regionMap.length; i++) {
+            if (uint8(regionMap[i]) >= params.size) {
+                revert InvalidRegionId(i, uint8(regionMap[i]), params.size);
+            }
+        }
+
+        // Store puzzle
+        state.puzzleHash = keccak256(regionMap);
+        regionMaps[contestId] = regionMap;
+
+        emit PuzzlePublished(contestId, state.puzzleHash, regionMapCid);
     }
 
     /// @notice Commit a solution hash
@@ -304,6 +377,11 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
             revert AlreadyCommitted(contestId, msg.sender);
         }
 
+        // Require puzzle to be published before commits
+        if (state.puzzleHash == bytes32(0)) {
+            revert PuzzleNotPublished(contestId);
+        }
+
         if (params.entryDepositWei > 0) {
             if (msg.value != params.entryDepositWei) revert IncorrectDeposit(params.entryDepositWei, msg.value);
         }
@@ -316,11 +394,10 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
 
     /// @notice Reveal a solution
     /// @param contestId Contest ID
-    /// @param encodedSolution Base64 JSON encoded solution (column array)
+    /// @param solution Packed column indices (1 byte per row)
     /// @param salt Salt used in commit hash
-    function revealSolution(uint256 contestId, bytes memory encodedSolution, bytes32 salt) external nonReentrant {
+    function revealSolution(uint256 contestId, bytes calldata solution, bytes32 salt) external nonReentrant {
         ContestStateData storage state = contestStates[contestId];
-        ContestParams memory params = contests[contestId];
         Commitment memory commitment = commits[contestId][msg.sender];
 
         if (commitment.commitHash == bytes32(0)) revert NoCommitmentFound(contestId, msg.sender);
@@ -330,55 +407,60 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         }
 
         // Check commit buffer: reveals only allowed after buffer period
-        uint256 bufferEndsAt = state.randomnessCapturedAt + params.commitBuffer;
-        if (block.number < bufferEndsAt) revert CommitBufferActive(contestId, block.number, bufferEndsAt);
+        {
+            uint256 bufferEndsAt = state.randomnessCapturedAt + contests[contestId].commitBuffer;
+            if (block.number < bufferEndsAt) revert CommitBufferActive(contestId, block.number, bufferEndsAt);
+        }
 
-        // Verify commit hash
-        bytes32 solutionHash = keccak256(encodedSolution);
-        bytes32 expectedCommit = keccak256(abi.encodePacked(contestId, msg.sender, solutionHash, salt));
-        if (expectedCommit != commitment.commitHash) revert CommitMismatch(contestId, msg.sender);
+        // Verify commit hash (updated for packed bytes solution format)
+        {
+            bytes32 expectedCommit =
+                keccak256(abi.encodePacked(contestId, msg.sender, keccak256(solution), salt));
+            if (expectedCommit != commitment.commitHash) revert CommitMismatch(contestId, msg.sender);
+        }
 
-        // TODO: Decode encodedSolution and validate board
-        // For now, stub validation
-        bool isValid = _validateSolution(contestId, encodedSolution);
+        // Validate solution against puzzle
+        bool isValid = _validateSolution(contests[contestId].size, solution, regionMaps[contestId]);
 
         hasRevealed[contestId][msg.sender] = true;
 
-        if (isValid && state.winnerCount < params.topN) {
-            // Winner!
-            state.winnerCount++;
-            uint8 rank = state.winnerCount;
-
-            // Calculate reward (flat split for MVP)
-            uint256 rewardWei = params.prizePoolWei / params.topN;
-            state.remainingPrizeWei -= rewardWei;
-
-            winners[contestId].push(
-                Winner({solver: msg.sender, rewardWei: rewardWei, revealedAt: block.number, rank: rank})
-            );
-
-            // Transfer reward immediately
-            (bool success,) = payable(msg.sender).call{value: rewardWei}("");
-            if (!success) revert RewardTransferFailed(msg.sender, rewardWei);
-
-            // Refund deposit if any
-            if (commitment.depositPaid > 0) {
-                (success,) = payable(msg.sender).call{value: commitment.depositPaid}("");
-                if (!success) revert DepositRefundFailed(msg.sender, commitment.depositPaid);
-            }
-
-            emit SolutionRevealed(contestId, msg.sender, rank, rewardWei, true);
-
-            // Check if contest should close (all winners found)
-            if (state.winnerCount >= params.topN) {
-                _closeContest(contestId);
-            }
+        if (isValid && state.winnerCount < contests[contestId].topN) {
+            _processWinner(contestId, state, commitment.depositPaid);
         } else {
             // Invalid solution or contest full
             if (commitment.depositPaid > 0) {
                 state.forfeitedDepositsWei += commitment.depositPaid;
             }
             emit SolutionRevealed(contestId, msg.sender, 0, 0, false);
+        }
+    }
+
+    /// @notice Process a winning reveal
+    function _processWinner(uint256 contestId, ContestStateData storage state, uint256 depositPaid) internal {
+        state.winnerCount++;
+        uint8 rank = state.winnerCount;
+
+        // Calculate reward (flat split for MVP)
+        uint256 rewardWei = contests[contestId].prizePoolWei / contests[contestId].topN;
+        state.remainingPrizeWei -= rewardWei;
+
+        winners[contestId].push(Winner({solver: msg.sender, rewardWei: rewardWei, revealedAt: block.number, rank: rank}));
+
+        // Transfer reward immediately
+        (bool success,) = payable(msg.sender).call{value: rewardWei}("");
+        if (!success) revert RewardTransferFailed(msg.sender, rewardWei);
+
+        // Refund deposit if any
+        if (depositPaid > 0) {
+            (success,) = payable(msg.sender).call{value: depositPaid}("");
+            if (!success) revert DepositRefundFailed(msg.sender, depositPaid);
+        }
+
+        emit SolutionRevealed(contestId, msg.sender, rank, rewardWei, true);
+
+        // Check if contest should close (all winners found)
+        if (state.winnerCount >= contests[contestId].topN) {
+            _closeContest(contestId);
         }
     }
 
@@ -419,6 +501,77 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         emit PrizeWithdrawn(contestId, contests[contestId].sponsor, amount);
     }
 
+    /// @notice Cancel contest if puzzle not published within deadline
+    /// @param contestId The contest ID
+    function cancelUnpublishedContest(uint256 contestId) external {
+        ContestStateData storage state = contestStates[contestId];
+
+        // Must be in CommitOpen state
+        if (state.state != ContestState.CommitOpen) {
+            revert CommitsNotOpen(contestId, state.state);
+        }
+
+        // Puzzle must not be published
+        if (state.puzzleHash != bytes32(0)) {
+            revert PuzzleAlreadyPublished(contestId);
+        }
+
+        // Deadline must have passed
+        if (block.number <= state.puzzlePublishDeadline) {
+            revert PuzzlePublishDeadlineNotPassed(contestId, state.puzzlePublishDeadline);
+        }
+
+        // Cancel contest
+        state.state = ContestState.Cancelled;
+
+        emit ContestCancelled(contestId, CancelReason.PuzzleNotPublished);
+    }
+
+    /// @notice Refund deposit for cancelled contest
+    /// @param contestId The contest ID
+    function refundCancelledDeposit(uint256 contestId) external nonReentrant {
+        ContestStateData storage state = contestStates[contestId];
+
+        if (state.state != ContestState.Cancelled) {
+            revert ContestNotCancelled(contestId);
+        }
+
+        Commitment storage commitment = commits[contestId][msg.sender];
+        if (commitment.depositPaid == 0) {
+            revert NoDepositToRefund(contestId, msg.sender);
+        }
+
+        uint256 amount = commitment.depositPaid;
+        commitment.depositPaid = 0;
+
+        (bool success,) = payable(msg.sender).call{value: amount}("");
+        if (!success) revert DepositRefundFailed(msg.sender, amount);
+
+        emit DepositRefunded(contestId, msg.sender, amount);
+    }
+
+    /// @notice Sponsor withdraws prize pool from cancelled contest
+    /// @param contestId The contest ID
+    function withdrawCancelledPrize(uint256 contestId) external onlySponsor(contestId) nonReentrant {
+        ContestStateData storage state = contestStates[contestId];
+
+        if (state.state != ContestState.Cancelled) {
+            revert ContestNotCancelled(contestId);
+        }
+
+        uint256 amount = state.remainingPrizeWei;
+        if (amount == 0) {
+            revert NoRemainingPrize(contestId);
+        }
+
+        state.remainingPrizeWei = 0;
+
+        (bool success,) = payable(msg.sender).call{value: amount}("");
+        if (!success) revert WithdrawalFailed(msg.sender, amount);
+
+        emit PrizeWithdrawn(contestId, msg.sender, amount);
+    }
+
     // ============ Internal Functions ============
 
     function _closeContest(uint256 contestId) internal {
@@ -428,12 +581,50 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         emit ContestClosed(contestId, state.winnerCount, state.remainingPrizeWei, state.forfeitedDepositsWei);
     }
 
-    /// @notice Validate solution (stub - TODO: implement full validation)
-    function _validateSolution(uint256 _contestId, bytes memory encodedSolution) internal pure returns (bool) {
-        _contestId;
-        // TODO: Decode base64 JSON, validate board constraints
-        // For MVP, accept any non-empty solution
-        return encodedSolution.length > 0;
+    /// @notice Validate solution against puzzle constraints
+    /// @param size Board dimension (5-10)
+    /// @param solution Packed bytes: solution[i] = column index for row i
+    /// @param regionMap Region ID for each cell (row-major order)
+    /// @return True if solution is valid
+    function _validateSolution(uint8 size, bytes calldata solution, bytes storage regionMap)
+        internal
+        view
+        returns (bool)
+    {
+        // Check solution length
+        if (solution.length != size) return false;
+
+        // Bitmaps for O(1) duplicate checking
+        uint256 colBitmap; // tracks used columns
+        uint256 regBitmap; // tracks used regions
+        uint8 prevCol = 255; // sentinel for adjacency check
+
+        for (uint8 row = 0; row < size; row++) {
+            uint8 col = uint8(solution[row]);
+
+            // Column must be in valid range
+            if (col >= size) return false;
+
+            // Column uniqueness: check and set bit
+            uint256 colBit = 1 << col;
+            if (colBitmap & colBit != 0) return false;
+            colBitmap |= colBit;
+
+            // Region uniqueness: check and set bit
+            uint8 regId = uint8(regionMap[uint256(row) * size + col]);
+            uint256 regBit = 1 << regId;
+            if (regBitmap & regBit != 0) return false;
+            regBitmap |= regBit;
+
+            // Adjacency: sovereigns in consecutive rows can't be within 1 column
+            if (row > 0) {
+                uint8 diff = col > prevCol ? col - prevCol : prevCol - col;
+                if (diff <= 1) return false;
+            }
+            prevCol = col;
+        }
+
+        return true;
     }
 
     // ============ View Functions ============
