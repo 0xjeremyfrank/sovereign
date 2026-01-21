@@ -414,8 +414,7 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
 
         // Verify commit hash (updated for packed bytes solution format)
         {
-            bytes32 expectedCommit =
-                keccak256(abi.encodePacked(contestId, msg.sender, keccak256(solution), salt));
+            bytes32 expectedCommit = keccak256(abi.encodePacked(contestId, msg.sender, keccak256(solution), salt));
             if (expectedCommit != commitment.commitHash) revert CommitMismatch(contestId, msg.sender);
         }
 
@@ -444,7 +443,9 @@ contract FirstBloodContest is ReentrancyGuard, VRFConsumerBaseV2Plus {
         uint256 rewardWei = contests[contestId].prizePoolWei / contests[contestId].topN;
         state.remainingPrizeWei -= rewardWei;
 
-        winners[contestId].push(Winner({solver: msg.sender, rewardWei: rewardWei, revealedAt: block.number, rank: rank}));
+        winners[contestId].push(
+            Winner({solver: msg.sender, rewardWei: rewardWei, revealedAt: block.number, rank: rank})
+        );
 
         // Transfer reward immediately
         (bool success,) = payable(msg.sender).call{value: rewardWei}("");

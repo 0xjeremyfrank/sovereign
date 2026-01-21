@@ -967,7 +967,9 @@ contract FirstBloodContestTest is Test {
         vm.roll(deadline + 1);
 
         vm.prank(sponsor);
-        vm.expectRevert(abi.encodeWithSelector(FirstBloodContest.PuzzlePublishDeadlinePassed.selector, contestId, deadline));
+        vm.expectRevert(
+            abi.encodeWithSelector(FirstBloodContest.PuzzlePublishDeadlinePassed.selector, contestId, deadline)
+        );
         contest.publishPuzzle(contestId, createTestRegionMap(), "QmTestPuzzle");
     }
 
