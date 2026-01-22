@@ -11,10 +11,14 @@ contract MockVRFCoordinatorV2Plus {
     // Stores pending requests for manual fulfillment
     mapping(uint256 => address) public requestConsumer;
 
+    /// @notice Emitted when a random words request is made
+    event RandomWordsRequested(uint256 indexed requestId, address indexed consumer);
+
     /// @notice Request random words (mock implementation)
     function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata) external returns (uint256 requestId) {
         requestId = _nextRequestId++;
         requestConsumer[requestId] = msg.sender;
+        emit RandomWordsRequested(requestId, msg.sender);
     }
 
     /// @notice Fulfill randomness for a pending request
