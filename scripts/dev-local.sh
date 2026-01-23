@@ -11,8 +11,13 @@ NC='\033[0m' # No Color
 ANVIL_PID=""
 VRF_WATCHER_PID=""
 NEXT_PID=""
+EXIT_CODE=0
 
 cleanup() {
+    # Capture exit code before any commands that might change it
+    local code=$?
+    [ $code -ne 0 ] && EXIT_CODE=$code
+
     echo -e "\n${YELLOW}Shutting down local environment...${NC}"
 
     if [ -n "$NEXT_PID" ]; then
@@ -34,7 +39,7 @@ cleanup() {
     fi
 
     echo -e "${GREEN}Shutdown complete${NC}"
-    exit 0
+    exit $EXIT_CODE
 }
 
 trap cleanup EXIT INT TERM
