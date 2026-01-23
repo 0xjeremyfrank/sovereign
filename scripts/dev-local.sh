@@ -49,7 +49,7 @@ echo ""
 
 # 1. Start Anvil
 echo -e "${YELLOW}Starting Anvil...${NC}"
-anvil --block-time 2 > /tmp/anvil.log 2>&1 &
+anvil --block-time 3 --silent > /tmp/anvil.log 2>&1 &
 ANVIL_PID=$!
 
 # Wait for Anvil to be ready
