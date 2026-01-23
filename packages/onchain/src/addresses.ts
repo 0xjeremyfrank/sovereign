@@ -6,8 +6,10 @@ import type { AddressOptions, AddressOverrides, ContractConfig } from './types';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const satisfies Hex;
 
 const STATIC_ADDRESSES: AddressOverrides = {
-  // Anvil (local) - deterministic address from DeployLocal.s.sol
-  // Deployer 0xf39F...2266 with nonce 1 always produces this address
+  // Anvil (local) - deterministic address when using `yarn dev:local` which runs
+  // DeployLocal.s.sol with Anvil's default account (0xf39F...2266, nonce 1).
+  // This enables zero-config local development. If using a different deploy setup,
+  // override via NEXT_PUBLIC_FIRST_BLOOD_CONTEST_ADDRESS_31337 env var.
   31337: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
   11155111: '0x165b72265a69f01a8C1fFF2764FF84A0392F78CA', // Sepolia (testnet) - VRF enabled
   8453: ZERO_ADDRESS, // Base (mainnet)

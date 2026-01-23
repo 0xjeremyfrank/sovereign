@@ -1,19 +1,8 @@
 import { createConfig, http } from 'wagmi';
 import { sepolia, base } from 'wagmi/chains';
-import { defineChain } from 'viem';
 import { injected } from '@wagmi/connectors';
 
-import { SUPPORTED_CHAIN, IS_LOCAL, ANVIL_CHAIN_ID } from './chain-config';
-
-// Anvil local chain (chain ID 31337)
-const anvil = defineChain({
-  id: 31337,
-  name: 'Anvil',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['http://localhost:8545'] },
-  },
-});
+import { SUPPORTED_CHAIN, IS_LOCAL, ANVIL_CHAIN_ID, anvil } from './chain-config';
 
 // Configure wagmi with supported chains
 const chains = IS_LOCAL ? [anvil, sepolia, base] as const : [sepolia, base] as const;

@@ -1,8 +1,8 @@
 import { sepolia, base } from 'wagmi/chains';
 import { defineChain } from 'viem';
 
-// Anvil local chain (chain ID 31337)
-const anvil = defineChain({
+// Anvil local chain (chain ID 31337) - single source of truth
+export const anvil = defineChain({
   id: 31337,
   name: 'Anvil',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
