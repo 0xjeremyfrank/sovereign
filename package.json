@@ -13,6 +13,7 @@
   },
   "scripts": {
     "dev": "yarn workspace web dev",
+    "dev:local": "./scripts/dev-local.sh",
     "build": "yarn workspaces foreach -pt -A run build",
     "test": "yarn workspaces foreach -pt -A run test",
     "lint": "yarn workspaces foreach -pt -A run lint",
