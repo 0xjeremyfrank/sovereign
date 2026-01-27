@@ -10,7 +10,9 @@
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "test": "vitest run",
     "test:ui": "vitest",
-    "e2e": "playwright test --reporter=list"
+    "e2e": "playwright test --reporter=list",
+    "e2e:local": "playwright test --config=playwright.local.config.ts --reporter=list",
+    "e2e:all": "yarn e2e && yarn e2e:local"
   },
   "dependencies": {
     "@sovereign/engine": "workspace:*",
