@@ -508,8 +508,7 @@ enum ContestState {
 ### Solution Encoding
 
 ```typescript
-// Old format (base64 JSON): "[2,4,0,3,1]" → ~20+ bytes
-// New format (packed bytes): 0x0204000301 → 5 bytes
+// Packed bytes format: [2, 4, 0, 3, 1] → 0x0204000301 (5 bytes)
 
 function encodeSolution(columns: number[]): Uint8Array {
   return new Uint8Array(columns);
@@ -679,5 +678,3 @@ The current design trusts the sponsor to publish a correctly-generated puzzle. F
 2. **Automatic puzzle encoding** — Frontend generates and encodes region map automatically after VRF.
 
 3. **IPFS backup** — Store region map on IPFS as backup retrieval method (already partially specified with `regionMapCid` parameter).
-
-4. **Solution format migration** — Smooth transition from base64 JSON to packed bytes format for existing users.
