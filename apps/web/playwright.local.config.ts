@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright config for local blockchain E2E tests
- * 
+ *
  * Uses yarn dev:local which spins up:
  * - Anvil local blockchain
  * - Contract deployment

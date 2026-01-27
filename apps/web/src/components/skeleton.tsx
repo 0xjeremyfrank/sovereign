@@ -3,12 +3,7 @@ interface SkeletonProps {
 }
 
 export const Skeleton = ({ className = '' }: SkeletonProps) => {
-  return (
-    <div
-      className={`animate-pulse bg-slate-200 rounded ${className}`}
-      aria-hidden="true"
-    />
-  );
+  return <div className={`animate-pulse bg-slate-200 rounded ${className}`} aria-hidden="true" />;
 };
 
 export const ContestCardSkeleton = () => {

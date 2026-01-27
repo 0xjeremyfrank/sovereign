@@ -16,10 +16,12 @@ Blockchain-native logic puzzle inspired by the classic n-Queens problem.
 ## Blockchain Integration
 
 **Implemented:**
+
 - Chainlink VRF for verifiable random seed generation
 - Commit-reveal contest flow with on-chain verification
 
 **Investigating:**
+
 - Chainlink Automation for scheduled puzzle releases
 - Chainlink Runtime Environment (CRE) workflows
 
@@ -37,23 +39,23 @@ This project uses AI-assisted development with [Claude Code](https://claude.ai/c
 
 ### Milestones
 
-| Milestone | Focus |
-|-----------|-------|
-| M1: Testnet MVP | Core gameplay loop on Sepolia |
-| M2: Polish & UX | Mobile, accessibility, animations |
+| Milestone                 | Focus                             |
+| ------------------------- | --------------------------------- |
+| M1: Testnet MVP           | Core gameplay loop on Sepolia     |
+| M2: Polish & UX           | Mobile, accessibility, animations |
 | M3: Production Deployment | Multi-chain support, Base mainnet |
-| M4: Automation & Indexing | Chainlink Automation, The Graph |
+| M4: Automation & Indexing | Chainlink Automation, The Graph   |
 
 ### Custom Agents
 
 Project-specific agents in `.claude/agents/`:
 
-| Agent | Purpose |
-|-------|---------|
-| `issue-picker` | Select next issue from current milestone |
-| `issue-creator` | Create standardized issues with labels/milestones |
-| `milestone-status` | Progress reporting for planning |
-| `session-closer` | End-of-session bookkeeping |
+| Agent              | Purpose                                           |
+| ------------------ | ------------------------------------------------- |
+| `issue-picker`     | Select next issue from current milestone          |
+| `issue-creator`    | Create standardized issues with labels/milestones |
+| `milestone-status` | Progress reporting for planning                   |
+| `session-closer`   | End-of-session bookkeeping                        |
 
 ### Workflow
 

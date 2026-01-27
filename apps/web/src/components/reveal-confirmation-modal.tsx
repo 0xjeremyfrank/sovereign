@@ -80,7 +80,9 @@ export const RevealConfirmationModal = ({
 
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="font-semibold text-green-800 mb-1">Potential Reward</p>
-            <p className="text-2xl font-bold text-green-600">{reward} {CURRENCY.symbol}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {reward} {CURRENCY.symbol}
+            </p>
             <p className="text-sm text-green-700 mt-1">
               You will be winner #{potentialRank} if your solution is valid.
             </p>
@@ -92,7 +94,9 @@ export const RevealConfirmationModal = ({
           {depositPaid > 0n && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="font-semibold text-amber-800 mb-1">Deposit Refund</p>
-              <p className="text-2xl font-bold text-amber-600">{deposit} {CURRENCY.symbol}</p>
+              <p className="text-2xl font-bold text-amber-600">
+                {deposit} {CURRENCY.symbol}
+              </p>
               <p className="text-sm text-amber-700 mt-1">
                 This deposit will be refunded on valid reveal.
               </p>

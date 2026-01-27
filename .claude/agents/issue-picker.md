@@ -10,16 +10,19 @@ You help select the next issue to work on from the current milestone.
 When invoked:
 
 1. Get current milestone status:
+
    ```bash
    gh api repos/{owner}/{repo}/milestones --jq 'sort_by(.title) | .[] | "\(.title): \(.open_issues) open, \(.closed_issues) closed"'
    ```
 
 2. List open issues for the active milestone (start with M1, then M2, etc.):
+
    ```bash
    gh issue list --milestone "M1: Testnet MVP" --state open --json number,title,labels,assignees
    ```
 
 3. Check project board for in-progress items:
+
    ```bash
    gh project item-list 2 --owner @me --format json | jq '.items[] | select(.status == "In Progress") | {title, status}'
    ```
@@ -32,7 +35,8 @@ When invoked:
    - Issue number (lower = older = higher priority)
 
 Output format:
-```
+
+````
 ## Recommended Next Issue
 
 **#<number>**: <title>
@@ -45,5 +49,8 @@ Output format:
 ```bash
 gh issue edit <number> --add-assignee @me
 git checkout -b feat/<branch-name>
+````
+
 ```
+
 ```

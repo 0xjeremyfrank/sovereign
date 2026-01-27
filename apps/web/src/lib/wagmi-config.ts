@@ -5,7 +5,7 @@ import { injected } from '@wagmi/connectors';
 import { SUPPORTED_CHAIN, IS_LOCAL, ANVIL_CHAIN_ID, anvil } from './chain-config';
 
 // Configure wagmi with supported chains
-const chains = IS_LOCAL ? [anvil, sepolia, base] as const : [sepolia, base] as const;
+const chains = IS_LOCAL ? ([anvil, sepolia, base] as const) : ([sepolia, base] as const);
 
 export const wagmiConfig = createConfig({
   chains,
@@ -21,4 +21,3 @@ export const wagmiConfig = createConfig({
 export { SUPPORTED_CHAIN, IS_LOCAL, ANVIL_CHAIN_ID };
 export const SEPOLIA_CHAIN_ID = sepolia.id;
 export const BASE_CHAIN_ID = base.id;
-

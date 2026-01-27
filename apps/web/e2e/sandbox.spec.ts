@@ -45,9 +45,11 @@ test.describe('Sandbox Play', () => {
     await newBoardButton.click();
 
     // Should show generating state briefly
-    await expect(page.getByText('Generating puzzle...')).toBeVisible({ timeout: 5000 }).catch(() => {
-      // Sometimes generation is fast enough that we miss this
-    });
+    await expect(page.getByText('Generating puzzle...'))
+      .toBeVisible({ timeout: 5000 })
+      .catch(() => {
+        // Sometimes generation is fast enough that we miss this
+      });
 
     // Board should be visible again
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
@@ -89,7 +91,7 @@ test.describe('Sandbox Play', () => {
 
     // Find size selector (could be dropdown or buttons)
     const sizeSelector = page.getByRole('combobox').or(page.locator('select'));
-    
+
     if (await sizeSelector.isVisible()) {
       await sizeSelector.selectOption({ index: 1 });
       // Board should regenerate

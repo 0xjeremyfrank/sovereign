@@ -16,11 +16,11 @@ test.describe('Admin Page', () => {
 
   test('has navigation back to other pages', async ({ page }) => {
     // Can navigate to sandbox
-    const sandboxLink = page.getByRole('link', { name: /sandbox|play/i }).or(
-      page.locator('a[href="/"]')
-    );
+    const sandboxLink = page
+      .getByRole('link', { name: /sandbox|play/i })
+      .or(page.locator('a[href="/"]'));
     await expect(sandboxLink.first()).toBeVisible();
-    
+
     // Can navigate to contests
     const contestsLink = page.getByRole('link', { name: /contests/i });
     await expect(contestsLink).toBeVisible();
@@ -30,10 +30,10 @@ test.describe('Admin Page', () => {
 test.describe('Admin Forms (Connected State)', () => {
   // These tests would require wallet mocking
   // For now we just verify the UI elements exist when wallet is not connected
-  
+
   test('schedule contest form structure', async ({ page }) => {
     await page.goto('/admin');
-    
+
     // When connected, should show schedule contest form
     // Since we're not connected, we just verify the page loads correctly
     await expect(page.getByRole('heading', { name: /admin/i })).toBeVisible();

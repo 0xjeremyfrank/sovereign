@@ -167,7 +167,9 @@ const RequestRandomnessCard = ({
 
       {isSuccess && hash && (
         <div className="mt-3 flex items-center gap-3">
-          <p className="text-sm text-green-600">Randomness requested! Waiting for VRF fulfillment...</p>
+          <p className="text-sm text-green-600">
+            Randomness requested! Waiting for VRF fulfillment...
+          </p>
           <a
             href={getExplorerTxUrl(hash)}
             target="_blank"
@@ -469,8 +471,11 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">
-          Total cost: <span className="font-semibold">{formData.prizePoolEth} {CURRENCY.symbol}</span> (prize
-          escrow)
+          Total cost:{' '}
+          <span className="font-semibold">
+            {formData.prizePoolEth} {CURRENCY.symbol}
+          </span>{' '}
+          (prize escrow)
         </p>
         <button
           onClick={handleSchedule}

@@ -180,7 +180,9 @@ export const CommitSolutionForm = ({
             Your solution has been committed to Contest #{contestId.toString()}.
           </p>
           {entryDepositWei > 0n && (
-            <p className="text-sm text-slate-500">Entry deposit: {entryDeposit} {CURRENCY.symbol}</p>
+            <p className="text-sm text-slate-500">
+              Entry deposit: {entryDeposit} {CURRENCY.symbol}
+            </p>
           )}
           <div className="flex gap-3 justify-center pt-4">
             <a
@@ -302,7 +304,9 @@ export const CommitSolutionForm = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-600">Entry Deposit</span>
-                  <span className="font-semibold">{entryDeposit} {CURRENCY.symbol}</span>
+                  <span className="font-semibold">
+                    {entryDeposit} {CURRENCY.symbol}
+                  </span>
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>Est. Gas</span>
@@ -310,7 +314,9 @@ export const CommitSolutionForm = ({
                 </div>
                 <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between">
                   <span className="font-semibold">Total</span>
-                  <span className="font-semibold">~{entryDeposit} {CURRENCY.symbol}</span>
+                  <span className="font-semibold">
+                    ~{entryDeposit} {CURRENCY.symbol}
+                  </span>
                 </div>
               </div>
             </div>

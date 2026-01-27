@@ -264,10 +264,10 @@ generateLogicSolvablePuzzle(seed, size, options):
 
 ## Complexity
 
-| Stage                | Complexity        | Notes                      |
-| -------------------- | ----------------- | -------------------------- |
-| Solution Generation  | O(n!) worst case  | Early pruning helps        |
-| Region Growth        | O(n^2)            | BFS with uniqueness checks |
-| Uniqueness Check     | O(2^n) worst case | Early exit at cap          |
-| Logic Solver         | O(n^2) per pass   | Linear constraint prop     |
-| Optimization         | O(iterations * uniqueness_check) | Hill-climbing |
+| Stage               | Complexity                        | Notes                      |
+| ------------------- | --------------------------------- | -------------------------- |
+| Solution Generation | O(n!) worst case                  | Early pruning helps        |
+| Region Growth       | O(n^2)                            | BFS with uniqueness checks |
+| Uniqueness Check    | O(2^n) worst case                 | Early exit at cap          |
+| Logic Solver        | O(n^2) per pass                   | Linear constraint prop     |
+| Optimization        | O(iterations \* uniqueness_check) | Hill-climbing              |

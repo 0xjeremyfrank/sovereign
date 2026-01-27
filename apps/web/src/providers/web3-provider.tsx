@@ -14,4 +14,3 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     </WagmiProvider>
   );
 };
-
