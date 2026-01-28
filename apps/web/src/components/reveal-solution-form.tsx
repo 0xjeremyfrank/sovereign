@@ -75,7 +75,10 @@ export const RevealSolutionForm = ({
 
   const { getCommitData } = useCommitStorage();
   const { reveal, hash, isPending, isConfirming, isSuccess, isReady, error } = useRevealSolution();
-  const { data: hasRevealedOnChain, refetch: refetchHasRevealed } = useHasRevealed(contestId, address);
+  const { data: hasRevealedOnChain, refetch: refetchHasRevealed } = useHasRevealed(
+    contestId,
+    address,
+  );
 
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -114,9 +117,11 @@ export const RevealSolutionForm = ({
   }
 
   const commitBufferEndsAt = randomnessCapturedAt > 0n ? randomnessCapturedAt + commitBuffer : 0n;
-  const isCommitBufferActive = currentBlock && commitBufferEndsAt > 0n && currentBlock < commitBufferEndsAt;
+  const isCommitBufferActive =
+    currentBlock && commitBufferEndsAt > 0n && currentBlock < commitBufferEndsAt;
   const isRevealWindowOpen = contestState === 3 || (contestState === 2 && !isCommitBufferActive);
-  const isRevealWindowEnded = currentBlock && revealWindowEndsAt > 0n && currentBlock >= revealWindowEndsAt;
+  const isRevealWindowEnded =
+    currentBlock && revealWindowEndsAt > 0n && currentBlock >= revealWindowEndsAt;
   const isContestFull = winnerCount >= topN;
 
   const potentialReward = prizePoolWei / BigInt(topN);
@@ -155,7 +160,9 @@ export const RevealSolutionForm = ({
             <p className="text-sm text-green-700 mb-1">Potential Rank</p>
             <p className="text-2xl font-bold text-green-600">#{potentialRank}</p>
             <p className="text-sm text-green-700 mt-2">Reward</p>
-            <p className="text-xl font-bold text-green-600">{formatEther(potentialReward)} {CURRENCY.symbol}</p>
+            <p className="text-xl font-bold text-green-600">
+              {formatEther(potentialReward)} {CURRENCY.symbol}
+            </p>
           </div>
           <div className="flex gap-3 justify-center pt-4">
             <a
@@ -295,16 +302,22 @@ export const RevealSolutionForm = ({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-600">Potential Reward</span>
-              <span className="font-semibold text-green-600">{formatEther(potentialReward)} {CURRENCY.symbol}</span>
+              <span className="font-semibold text-green-600">
+                {formatEther(potentialReward)} {CURRENCY.symbol}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600">Potential Rank</span>
-              <span className="font-semibold">#{potentialRank} of {topN}</span>
+              <span className="font-semibold">
+                #{potentialRank} of {topN}
+              </span>
             </div>
             {depositPaid > 0n && (
               <div className="flex justify-between">
                 <span className="text-slate-600">Deposit Refund</span>
-                <span className="font-semibold text-amber-600">{formatEther(depositPaid)} {CURRENCY.symbol}</span>
+                <span className="font-semibold text-amber-600">
+                  {formatEther(depositPaid)} {CURRENCY.symbol}
+                </span>
               </div>
             )}
             <div className="border-t border-slate-200 pt-2 mt-2 flex justify-between">
@@ -325,7 +338,9 @@ export const RevealSolutionForm = ({
 
         <button
           onClick={handleReveal}
-          disabled={!isReady || isCommitBufferActive || isPending || isConfirming || !isRevealWindowOpen}
+          disabled={
+            !isReady || isCommitBufferActive || isPending || isConfirming || !isRevealWindowOpen
+          }
           className="w-full px-6 py-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {(isPending || isConfirming) && <Spinner size="md" />}
@@ -335,9 +350,7 @@ export const RevealSolutionForm = ({
         {error && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm font-medium text-red-700 mb-1">Transaction Failed</p>
-            <p className="text-sm text-red-600 font-mono break-all">
-              {extractErrorReason(error)}
-            </p>
+            <p className="text-sm text-red-600 font-mono break-all">{extractErrorReason(error)}</p>
           </div>
         )}
       </div>

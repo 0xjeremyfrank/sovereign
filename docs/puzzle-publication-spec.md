@@ -15,7 +15,7 @@ Sponsor calls `publishPuzzle()` once, storing the full region map on-chain.
 - Simpler reveal calldata
 - Better UX for players; gas cost is sponsor's responsibility
 
-*Alternative considered:* Calldata each reveal — rejected due to worse player UX and repeated calldata costs.
+_Alternative considered:_ Calldata each reveal — rejected due to worse player UX and repeated calldata costs.
 
 ### 2. Puzzle Publisher: Sponsor Only
 
@@ -25,17 +25,17 @@ Only the contest sponsor can publish the puzzle via `onlySponsor` modifier.
 - Clear accountability
 - Sponsor already has skin in the game (prize pool)
 
-*Alternative considered:* Permissionless publication — rejected due to complexity of on-chain verification that region map matches seed.
+_Alternative considered:_ Permissionless publication — rejected due to complexity of on-chain verification that region map matches seed.
 
 ### 3. Puzzle Publication Deadline: 100 Blocks (~20 minutes)
 
 Sponsor has 100 blocks after VRF fulfillment to publish the puzzle.
 
-| Considered | Blocks | Time | Decision |
-|------------|--------|------|----------|
-| Tight | 50 | ~10 min | Too risky |
-| **Medium** | **100** | **~20 min** | **Selected** |
-| Relaxed | 300 | ~1 hour | Delays contest too long |
+| Considered | Blocks  | Time        | Decision                |
+| ---------- | ------- | ----------- | ----------------------- |
+| Tight      | 50      | ~10 min     | Too risky               |
+| **Medium** | **100** | **~20 min** | **Selected**            |
+| Relaxed    | 300     | ~1 hour     | Delays contest too long |
 
 Sponsor should be watching for VRF fulfillment and ready to publish promptly.
 
@@ -48,7 +48,8 @@ If sponsor doesn't publish puzzle within deadline:
 - Prize pool returned to sponsor via `withdrawCancelledPrize()`
 - Clean, fair failure mode
 
-*Alternatives considered:*
+_Alternatives considered:_
+
 - Allow late publication — rejected due to poor UX (players may have left)
 - Slash sponsor stake — rejected as too complex for MVP
 
@@ -61,7 +62,7 @@ No on-chain mechanism to challenge an invalid puzzle for MVP.
 - A cheating sponsor would be immediately obvious and lose reputation
 - Social layer enforcement is sufficient for MVP
 
-*Future consideration:* Add fraud proof mechanism or on-chain verification in later milestones.
+_Future consideration:_ Add fraud proof mechanism or on-chain verification in later milestones.
 
 ### 6. Commit Gating: Require Puzzle Published
 
@@ -78,6 +79,7 @@ Commits are blocked until puzzle is published. `commitSolution()` requires `puzz
 ### Current State
 
 The `FirstBloodContest` contract has:
+
 - VRF integration providing `globalSeed` after `requestRandomness()`
 - `puzzleHash` field in `ContestStateData` (never set)
 - `_validateSolution()` stub accepting any non-empty bytes
@@ -85,6 +87,7 @@ The `FirstBloodContest` contract has:
 ### Problem
 
 The contract cannot verify that a revealed solution is correct because:
+
 1. Puzzle (region map) is generated off-chain from the seed
 2. Contract only has the seed, not the region map
 3. On-chain puzzle generation is too expensive
@@ -92,6 +95,7 @@ The contract cannot verify that a revealed solution is correct because:
 ### Constraint
 
 Puzzle generation is computationally intensive:
+
 - Backtracking with uniqueness checking
 - Hill-climbing optimization for logic-solvability
 - 5x5: ~7ms, 10x10: ~330ms off-chain
@@ -463,24 +467,24 @@ enum ContestState {
 
 ### publishPuzzle (10x10 board)
 
-| Component | Gas | Notes |
-|-----------|-----|-------|
-| Base transaction | 21,000 | |
-| Calldata (100 bytes) | ~1,600 | 16 gas per non-zero byte |
-| Storage (puzzleHash) | ~22,000 | New slot |
-| Storage (regionMap) | ~200,000 | 100 bytes = 4 slots (packed) |
-| Loop validation | ~5,000 | 100 iterations, simple checks |
-| **Total** | **~250,000** | One-time sponsor cost |
+| Component            | Gas          | Notes                         |
+| -------------------- | ------------ | ----------------------------- |
+| Base transaction     | 21,000       |                               |
+| Calldata (100 bytes) | ~1,600       | 16 gas per non-zero byte      |
+| Storage (puzzleHash) | ~22,000      | New slot                      |
+| Storage (regionMap)  | ~200,000     | 100 bytes = 4 slots (packed)  |
+| Loop validation      | ~5,000       | 100 iterations, simple checks |
+| **Total**            | **~250,000** | One-time sponsor cost         |
 
 ### revealSolution with validation (10x10 board)
 
-| Component | Gas | Notes |
-|-----------|-----|-------|
-| Existing reveal logic | ~70,000 | Commit verification, state, ETH transfer |
-| Solution calldata (10 bytes) | ~160 | |
-| Validation loop | ~8,000 | Bitmap ops |
-| Region map SLOAD | ~2,100 | Cold read |
-| **Total** | **~80,000** | ~$0.06 at 30 gwei, $2500 ETH |
+| Component                    | Gas         | Notes                                    |
+| ---------------------------- | ----------- | ---------------------------------------- |
+| Existing reveal logic        | ~70,000     | Commit verification, state, ETH transfer |
+| Solution calldata (10 bytes) | ~160        |                                          |
+| Validation loop              | ~8,000      | Bitmap ops                               |
+| Region map SLOAD             | ~2,100      | Cold read                                |
+| **Total**                    | **~80,000** | ~$0.06 at 30 gwei, $2500 ETH             |
 
 **Additional cost vs current stub:** ~10,000 gas (~$0.05)
 
@@ -551,10 +555,10 @@ function decodeSolution(bytes: Uint8Array): number[] {
 ### Gas Benchmarks
 
 | Board Size | publishPuzzle | revealSolution |
-|------------|---------------|----------------|
-| 5x5 | | |
-| 7x7 | | |
-| 10x10 | | |
+| ---------- | ------------- | -------------- |
+| 5x5        |               |                |
+| 7x7        |               |                |
+| 10x10      |               |                |
 
 ---
 

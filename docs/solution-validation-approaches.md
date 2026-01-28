@@ -9,6 +9,7 @@ Analysis of options for validating puzzle solutions in the FirstBloodContest con
 **Goal**: Verify that revealed solutions are actually valid for the puzzle before awarding prizes.
 
 **Constraints**:
+
 - Puzzle is deterministically generated from VRF seed
 - Most puzzles have exactly ONE valid solution
 - First valid reveal wins (speed matters)
@@ -30,12 +31,14 @@ Analysis of options for validating puzzle solutions in the FirstBloodContest con
 **Critical Vulnerability: Brute Force Attack**
 
 The solution space is small enough to enumerate:
+
 - 5x5 board: 5! = 120 permutations (column uniqueness only)
 - 10x10 board: 10! = 3.6M permutations
 
 With adjacency constraint filtering, valid permutations drop to ~1-10% of total.
 
 An attacker could:
+
 1. Enumerate all valid permutations
 2. Hash each one
 3. Compare against published `validSolutionHash`
@@ -79,45 +82,50 @@ An attacker could:
 ### Why This Is Secure
 
 **During commit phase:**
+
 - `validSolutionHash` is public, but salt is unknown
 - Brute force requires trying: `hash(candidate, salt)` for all possible salts
 - Salt space: 256 bits = computationally infeasible
 
 **After salt revealed:**
+
 - Commits are already locked
 - Attacker can now compute the valid solution, but cannot submit new commit
 - Their existing commit (if any) won't match unless they actually solved it
 
 **Attack scenarios:**
 
-| Attack | Why It Fails |
-|--------|--------------|
-| Brute force during commit | Salt unknown, can't verify candidates |
-| Submit after seeing salt | Commit window closed |
-| Commit garbage, hope it matches | Probability ≈ 0 |
+| Attack                          | Why It Fails                          |
+| ------------------------------- | ------------------------------------- |
+| Brute force during commit       | Salt unknown, can't verify candidates |
+| Submit after seeing salt        | Commit window closed                  |
+| Commit garbage, hope it matches | Probability ≈ 0                       |
 
 ### Cost Analysis
 
-| Operation | Gas Cost |
-|-----------|----------|
-| `publishSolutionHash` | ~45k (one-time, sponsor) |
-| `revealSalt` | ~25k (one-time, sponsor) |
-| `_validateSolution` | ~500 (per reveal, just one hash) |
+| Operation             | Gas Cost                         |
+| --------------------- | -------------------------------- |
+| `publishSolutionHash` | ~45k (one-time, sponsor)         |
+| `revealSalt`          | ~25k (one-time, sponsor)         |
+| `_validateSolution`   | ~500 (per reveal, just one hash) |
 
 **Total validation cost per reveal: ~500 gas** — essentially free.
 
 ### UX Concerns
 
 **Sponsor burden:**
+
 - Must be online after VRF to publish hash
 - Must be online after commit window to reveal salt
 - Two manual transactions required
 
 **Failure modes:**
+
 - Sponsor doesn't reveal salt → contest stalls (needs timeout fallback)
 - Sponsor publishes wrong hash → no one can win (needs refund mechanism)
 
 **Mitigations:**
+
 - Automate via Chainlink Automation / Gelato keepers
 - Timeout: if salt not revealed, players get deposits back
 - But adds infrastructure complexity
@@ -210,15 +218,18 @@ function _validateSolution(
 ### Why Bitmap Validation Works
 
 **Column uniqueness**:
+
 - `colBitmap` tracks which columns have sovereigns
 - For column `c`, check if bit `c` is set, then set it
 - O(1) per check using bitwise AND/OR
 
 **Region uniqueness**:
+
 - Same approach with `regBitmap`
 - Region IDs are 0 to size-1, fit in uint256 bitmap
 
 **Adjacency optimization**:
+
 - Only check consecutive rows (not all 8 directions)
 - If row `i` has sovereign at column `c1` and row `i+1` has sovereign at `c2`:
   - They're adjacent if `|c1 - c2| <= 1`
@@ -227,18 +238,18 @@ function _validateSolution(
 
 ### Gas Analysis (10x10 Board)
 
-| Component | Gas | Notes |
-|-----------|-----|-------|
-| **Calldata** | | |
-| Solution (10 bytes) | ~160 | 16 gas per non-zero byte |
-| Salt (32 bytes) | ~512 | |
-| Region map (100 bytes) | ~1,600 | Could optimize with packing |
-| **Computation** | | |
-| Region map hash verification | ~1,000 | One keccak256 |
-| Validation loop (10 iters) | ~8,000 | Bitmap ops are cheap |
-| **Existing reveal logic** | ~50,000 | Commit verification, state updates, ETH transfer |
-| **Base transaction** | ~21,000 | |
-| **Total** | **~82,000** | |
+| Component                    | Gas         | Notes                                            |
+| ---------------------------- | ----------- | ------------------------------------------------ |
+| **Calldata**                 |             |                                                  |
+| Solution (10 bytes)          | ~160        | 16 gas per non-zero byte                         |
+| Salt (32 bytes)              | ~512        |                                                  |
+| Region map (100 bytes)       | ~1,600      | Could optimize with packing                      |
+| **Computation**              |             |                                                  |
+| Region map hash verification | ~1,000      | One keccak256                                    |
+| Validation loop (10 iters)   | ~8,000      | Bitmap ops are cheap                             |
+| **Existing reveal logic**    | ~50,000     | Commit verification, state updates, ETH transfer |
+| **Base transaction**         | ~21,000     |                                                  |
+| **Total**                    | **~82,000** |                                                  |
 
 **Comparison to current stub**: ~70,000 gas
 
@@ -247,11 +258,13 @@ function _validateSolution(
 ### Region Map Handling
 
 **Option A: Player submits region map with each reveal**
+
 - Calldata cost: ~1,600 gas per reveal
 - Contract verifies: `keccak256(regionMap) == puzzleHash`
 - No storage cost, but repeated calldata
 
 **Option B: Sponsor publishes region map once (Recommended)**
+
 - Sponsor calls `publishPuzzle(contestId, regionMap)` after VRF
 - Contract stores region map on-chain
 - Storage cost: ~200k gas one-time (100 bytes = 4 storage slots)
@@ -259,6 +272,7 @@ function _validateSolution(
 - Saves ~1,600 gas per reveal
 
 **Option C: Pack region map to 4 bits per cell**
+
 - Region IDs are 0-9, fit in 4 bits
 - 100 cells × 4 bits = 400 bits = 50 bytes
 - Saves ~800 gas calldata vs Option A
@@ -317,33 +331,35 @@ function revealSolution(
 
 ### Trust Model
 
-| Aspect | Analysis |
-|--------|----------|
-| **Trustless validation** | Yes - contract enforces all rules |
-| **Sponsor role** | Only publishes region map (can be verified against seed) |
-| **Manipulation risk** | None - validation is deterministic |
-| **Single point of failure** | None for validation; sponsor must publish puzzle |
+| Aspect                      | Analysis                                                 |
+| --------------------------- | -------------------------------------------------------- |
+| **Trustless validation**    | Yes - contract enforces all rules                        |
+| **Sponsor role**            | Only publishes region map (can be verified against seed) |
+| **Manipulation risk**       | None - validation is deterministic                       |
+| **Single point of failure** | None for validation; sponsor must publish puzzle         |
 
 ### Failure Modes
 
 **Sponsor doesn't publish puzzle:**
+
 - Players can't reveal (validation needs region map)
 - Add timeout: if puzzle not published within X blocks after VRF, contest cancelled
 - Players get deposits refunded
 
 **Sponsor publishes wrong region map:**
+
 - Region map is deterministic from seed
 - Anyone can verify off-chain and call out sponsor
 - Could add: verification that region map matches seed (complex)
 
 ### Further Optimizations
 
-| Optimization | Gas Saved | Complexity |
-|--------------|-----------|------------|
-| Pack region map (4 bits/cell) | ~800 calldata | Low |
-| Assembly for bitmap ops | ~2,000 | Medium |
-| Store region map as bytes32[4] | ~500 SLOAD | Low |
-| Batch validation (multiple reveals) | Variable | Medium |
+| Optimization                        | Gas Saved     | Complexity |
+| ----------------------------------- | ------------- | ---------- |
+| Pack region map (4 bits/cell)       | ~800 calldata | Low        |
+| Assembly for bitmap ops             | ~2,000        | Medium     |
+| Store region map as bytes32[4]      | ~500 SLOAD    | Low        |
+| Batch validation (multiple reveals) | Variable      | Medium     |
 
 ### Verdict
 
@@ -367,11 +383,11 @@ function revealSolution(
 
 ### Cost Analysis
 
-| Scenario | Gas Cost | Who Pays |
-|----------|----------|----------|
-| Happy path (no challenge) | ~50k (reveal) + ~30k (finalize) | Solver |
-| Challenge (invalid solution) | ~50k + ~80k validation | Challenger (refunded) |
-| Challenge (valid solution) | ~50k + ~80k validation | Challenger (lost) |
+| Scenario                     | Gas Cost                        | Who Pays              |
+| ---------------------------- | ------------------------------- | --------------------- |
+| Happy path (no challenge)    | ~50k (reveal) + ~30k (finalize) | Solver                |
+| Challenge (invalid solution) | ~50k + ~80k validation          | Challenger (refunded) |
+| Challenge (valid solution)   | ~50k + ~80k validation          | Challenger (lost)     |
 
 ### UX Impact
 
@@ -403,11 +419,11 @@ function revealSolution(
 
 ### Cost Analysis
 
-| Component | Cost |
-|-----------|------|
+| Component                   | Cost            |
+| --------------------------- | --------------- |
 | Chainlink Functions request | ~0.2 LINK (~$3) |
-| Callback gas | ~100k gas |
-| Reveal transaction | ~50k gas |
+| Callback gas                | ~100k gas       |
+| Reveal transaction          | ~50k gas        |
 
 **Per-reveal cost**: ~$3-5 (LINK + gas)
 
@@ -431,11 +447,11 @@ function revealSolution(
 
 ### Cost Analysis
 
-| Component | Cost |
-|-----------|------|
-| Proof generation | 5-30 seconds (client-side) |
-| On-chain verification | ~200-300k gas |
-| Circuit setup | One-time, weeks of effort |
+| Component             | Cost                       |
+| --------------------- | -------------------------- |
+| Proof generation      | 5-30 seconds (client-side) |
+| On-chain verification | ~200-300k gas              |
+| Circuit setup         | One-time, weeks of effort  |
 
 ### Verdict
 
@@ -465,14 +481,14 @@ function revealSolution(
 
 ## Comparison Matrix
 
-| Criteria | Unsalted Hash | Salted Hash | **On-Chain** | Fraud Proof | Chainlink | ZK Proof |
-|----------|---------------|-------------|--------------|-------------|-----------|----------|
-| **Security** | Broken | Sponsor trust | **Trustless** | Trustless | Oracle trust | Trustless |
-| **Gas/reveal** | ~500 | ~500 | **~12k extra** | ~30k finalize | ~150k | ~200k |
-| **Latency** | Instant | Instant | **Instant** | 20+ min | 15-45 sec | Instant |
-| **Sponsor UX** | N/A | 2 txns, timed | **1 txn** | None | None | None |
-| **Ongoing cost** | None | None | **None** | None | ~$3/reveal | None |
-| **Impl. complexity** | Low | Low | **Low** | Medium-High | Medium | High |
+| Criteria             | Unsalted Hash | Salted Hash   | **On-Chain**   | Fraud Proof   | Chainlink    | ZK Proof  |
+| -------------------- | ------------- | ------------- | -------------- | ------------- | ------------ | --------- |
+| **Security**         | Broken        | Sponsor trust | **Trustless**  | Trustless     | Oracle trust | Trustless |
+| **Gas/reveal**       | ~500          | ~500          | **~12k extra** | ~30k finalize | ~150k        | ~200k     |
+| **Latency**          | Instant       | Instant       | **Instant**    | 20+ min       | 15-45 sec    | Instant   |
+| **Sponsor UX**       | N/A           | 2 txns, timed | **1 txn**      | None          | None         | None      |
+| **Ongoing cost**     | None          | None          | **None**       | None          | ~$3/reveal   | None      |
+| **Impl. complexity** | Low           | Low           | **Low**        | Medium-High   | Medium       | High      |
 
 ---
 
@@ -481,6 +497,7 @@ function revealSolution(
 ### For MVP (M1)
 
 **On-Chain Validation** is the best choice:
+
 - Fully trustless - no sponsor coordination after puzzle published
 - Instant validation - immediate payouts
 - Reasonable cost - ~$0.06 extra per reveal

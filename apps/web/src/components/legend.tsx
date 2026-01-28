@@ -39,9 +39,7 @@ export const Legend: React.FC<Props> = ({ validation, board, size }) => {
         <div
           className={classNames(
             'px-3 py-2 rounded-lg text-xs font-medium inline-flex items-center gap-1.5',
-            validation.isValid
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-rose-100 text-rose-700',
+            validation.isValid ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
           )}
         >
           {validation.isValid ? (
@@ -54,9 +52,7 @@ export const Legend: React.FC<Props> = ({ validation, board, size }) => {
         <div
           className={classNames(
             'px-3 py-2 rounded-lg text-xs font-medium inline-flex items-center gap-1.5',
-            validation.isComplete
-              ? 'bg-indigo-100 text-indigo-700'
-              : 'bg-slate-100 text-slate-500',
+            validation.isComplete ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500',
           )}
         >
           {validation.isComplete ? (
@@ -70,4 +66,3 @@ export const Legend: React.FC<Props> = ({ validation, board, size }) => {
     </div>
   );
 };
-

@@ -55,4 +55,5 @@ export const getExplorerUrl = (hash: string, type: 'tx' | 'address' = 'tx'): str
 
 export const getExplorerTxUrl = (hash: string): string => getExplorerUrl(hash, 'tx');
 
-export const getExplorerAddressUrl = (address: string): string => getExplorerUrl(address, 'address');
+export const getExplorerAddressUrl = (address: string): string =>
+  getExplorerUrl(address, 'address');

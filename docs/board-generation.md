@@ -68,6 +68,7 @@ Ensure puzzles can be solved using pure logic (no guessing).
 4. **Region Singles** - If region has exactly one candidate, place it
 
 **Implementation:**
+
 - `packages/engine/src/optimizer.ts` - Hill-climbing optimization
 - `packages/engine/src/logic-solver.ts` - Rule-based solver
 
@@ -102,8 +103,8 @@ const puzzle = generateLogicSolvablePuzzle(seed, size, options);
 ```typescript
 interface GenerationOptions {
   maxOptimizationIterations?: number; // Default: 500
-  requireLogicSolvable?: boolean;     // Default: true
-  maxRetries?: number;                // Default: 100
+  requireLogicSolvable?: boolean; // Default: true
+  maxRetries?: number; // Default: 100
 }
 ```
 
@@ -119,16 +120,16 @@ interface RegionMap {
 
 ## Performance
 
-| Size  | Avg Time | Notes             |
-| ----- | -------- | ----------------- |
-| 5x5   | ~7ms     | Very fast         |
-| 6x6   | ~4ms     | Fast              |
-| 7x7   | ~10ms    | Consistent        |
-| 8x8   | ~61ms    | First slowdown    |
-| 9x9   | ~40ms    | Fast              |
-| 10x10 | ~330ms   | Slower            |
-| 11x11 | ~378ms   | Similar to 10x10  |
-| 12x12 | ~1.1s    | High variance     |
+| Size  | Avg Time | Notes            |
+| ----- | -------- | ---------------- |
+| 5x5   | ~7ms     | Very fast        |
+| 6x6   | ~4ms     | Fast             |
+| 7x7   | ~10ms    | Consistent       |
+| 8x8   | ~61ms    | First slowdown   |
+| 9x9   | ~40ms    | Fast             |
+| 10x10 | ~330ms   | Slower           |
+| 11x11 | ~378ms   | Similar to 10x10 |
+| 12x12 | ~1.1s    | High variance    |
 
 ## Quality Requirements
 

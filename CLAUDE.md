@@ -33,7 +33,7 @@ forge test                   # Contract tests (from contracts/)
 - Named exports, no default exports
 - 2-space indent, single quotes, trailing commas
 - kebab-case files, PascalCase components
-- Import order: external → @sovereign/* → relative
+- Import order: external → @sovereign/\* → relative
 - Use `@/` alias for web app imports
 - Prefer functional style code over object oriented, declarative over imperative
 
@@ -63,12 +63,14 @@ This project uses an AI-assisted development workflow with GitHub as the source 
 ### GitHub Structure
 
 **Milestones** (sequential phases):
+
 - M1: Testnet MVP — Core gameplay loop on Sepolia
 - M2: Polish & UX — Mobile, accessibility, animations
 - M3: Production Deployment — Multi-chain support, Base mainnet
 - M4: Automation & Indexing — Chainlink Automation, The Graph
 
 **Labels** (categorization):
+
 - `ui`, `onchain`, `logic` — Component area
 - `enhancement`, `bug`, `documentation` — Issue type
 - `P1`, `P2`, `P3` — Priority level
@@ -79,17 +81,20 @@ This project uses an AI-assisted development workflow with GitHub as the source 
 ### Workflow for AI Agents
 
 1. **Start of session**: Review current milestone and open issues
+
    ```bash
    gh issue list --milestone "M1: Testnet MVP" --state open
    gh project item-list 2 --owner @me
    ```
 
 2. **Pick work**: Select an issue from current milestone, assign yourself
+
    ```bash
    gh issue edit <number> --add-assignee @me
    ```
 
 3. **Create branch**: Branch from main with appropriate prefix
+
    ```bash
    git checkout -b feat/issue-description
    ```
@@ -97,6 +102,7 @@ This project uses an AI-assisted development workflow with GitHub as the source 
 4. **Implement**: Follow code style, write tests, keep changes focused
 
 5. **Commit**: Use conventional commits, reference issue
+
    ```bash
    git commit -m "feat(web): implement reveal solution UI
 
@@ -104,6 +110,7 @@ This project uses an AI-assisted development workflow with GitHub as the source 
    ```
 
 6. **PR creation**: Link to issue, describe changes, request review
+
    ```bash
    gh pr create --title "feat(web): implement reveal solution UI" \
      --body "Closes #36\n\n## Summary\n..." --base main
@@ -135,6 +142,7 @@ gh project item-list 2 --owner @me --format json | jq '.items[] | {title, status
 Use GitHub's native sub-issues feature to track dependencies (blocks/blocked by).
 
 **Relationship Types**:
+
 - **Parent/Child (Sub-issues)**: Epic → tasks breakdown
 - **Blocks/Blocked by**: Work that must complete before another can start
 
@@ -218,12 +226,14 @@ gh issue list --label "blocked" --state open
 ```
 
 **Workflow for Dependencies**:
+
 1. Add `blockedBy` relationship between dependent issues
 2. Add `blocked` label to dependent issue for visibility
 3. When blocker is resolved, remove relationship and `blocked` label
 4. Check for blocked issues before starting work
 
 **Conventions**:
+
 - Epic issues are parents of their task breakdowns (use sub-issues)
 - For blocking dependencies, use `addBlockedBy` mutation + `blocked` label
 - Document blocking reason in issue comment when adding relationship
@@ -235,4 +245,3 @@ gh issue list --label "blocked" --state open
 - [ ] Pick next issue from current milestone
 - [ ] Verify tests pass before committing
 - [ ] Update project board after PR merge
-

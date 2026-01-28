@@ -1,12 +1,21 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * Playwright config for local blockchain E2E tests
+ *
+ * Uses yarn dev:local which spins up:
+ * - Anvil local blockchain
+ * - Contract deployment
+ * - VRF auto-fulfillment watcher
+ * - Next.js with local chain config
+ */
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: '**/blockchain.spec.ts',
+  testMatch: 'blockchain.spec.ts',
   reporter: 'list',
-  timeout: 30000,
+  timeout: 60000,
   expect: {
-    timeout: 10000,
+    timeout: 15000,
   },
   use: {
     baseURL: 'http://localhost:3000',
@@ -14,10 +23,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'yarn dev',
+    command: 'cd ../.. && yarn dev:local',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
-    timeout: 60000,
+    timeout: 120000, // 2 min for Anvil + contracts + Next.js
   },
   projects: [
     {

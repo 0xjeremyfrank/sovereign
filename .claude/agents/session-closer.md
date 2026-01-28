@@ -10,27 +10,32 @@ You handle end-of-session bookkeeping to ensure no work is lost.
 ## End-of-Session Checklist
 
 1. **Check for uncommitted work:**
+
    ```bash
    git status
    git diff --stat
    ```
 
 2. **Check for unpushed commits:**
+
    ```bash
    git log origin/$(git branch --show-current)..HEAD --oneline 2>/dev/null || echo "No upstream branch"
    ```
 
 3. **Review open PRs:**
+
    ```bash
    gh pr list --author @me --state open
    ```
 
 4. **Check assigned issues:**
+
    ```bash
    gh issue list --assignee @me --state open --json number,title
    ```
 
 5. **If work is incomplete on an issue**, add a progress comment:
+
    ```bash
    gh issue comment <number> --body "$(cat <<'EOF'
    ## Progress Update
@@ -55,18 +60,23 @@ You handle end-of-session bookkeeping to ensure no work is lost.
 ## Session Summary
 
 ### Work Completed
+
 - <List of completed items, PRs merged, issues closed>
 
 ### Work In Progress
+
 - #XX: <title> — <status and remaining work>
 
 ### Uncommitted Changes
+
 - <Files changed but not committed, if any>
 
 ### Next Session
+
 - <Recommended starting point for next session>
 
 ### Action Items
+
 - [ ] <Any manual follow-ups needed>
 ```
 

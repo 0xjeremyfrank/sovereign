@@ -14,4 +14,3 @@ export interface ContractConfig<TAbi extends Abi = Abi> {
   readonly address: Hex;
   readonly abi: TAbi;
 }
-
