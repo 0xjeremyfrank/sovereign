@@ -67,30 +67,48 @@ test.describe('Sandbox Play', () => {
     // Wait for board
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
-    // Make some moves first
+    // Get initial state of first cell
     const cells = page.locator('[role="gridcell"]');
     const firstCell = cells.first();
+    const initialClass = await firstCell.getAttribute('class');
+
+    // Make a move
     await firstCell.click();
+    const afterClickClass = await firstCell.getAttribute('class');
+    expect(afterClickClass).not.toBe(initialClass);
 
     // Find and click clear button
     const clearButton = page.getByRole('button', { name: /clear/i });
     await expect(clearButton).toBeVisible();
     await clearButton.click();
+
+    // Verify cell was cleared back to initial state
+    const afterClearClass = await firstCell.getAttribute('class');
+    expect(afterClearClass).toBe(initialClass);
   });
 
   test('can undo moves', async ({ page }) => {
     // Wait for board
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
-    // Make a move
+    // Get initial state of first cell
     const cells = page.locator('[role="gridcell"]');
     const firstCell = cells.first();
+    const initialClass = await firstCell.getAttribute('class');
+
+    // Make a move
     await firstCell.click();
+    const afterClickClass = await firstCell.getAttribute('class');
+    expect(afterClickClass).not.toBe(initialClass);
 
     // Find and click undo button
     const undoButton = page.getByRole('button', { name: /undo/i });
     await expect(undoButton).toBeVisible();
     await undoButton.click();
+
+    // Verify undo reverted the cell to initial state
+    const afterUndoClass = await firstCell.getAttribute('class');
+    expect(afterUndoClass).toBe(initialClass);
   });
 
   test('can change board size', async ({ page }) => {
