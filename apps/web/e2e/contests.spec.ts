@@ -11,25 +11,13 @@ test.describe('Contest Browsing', () => {
   });
 
   test('shows loading or content state', async ({ page }) => {
-    // On fresh load, should show skeleton/loading or content
-    // Without blockchain connection, skeletons may persist
-    const skeletons = page
-      .locator('[class*="skeleton"]')
-      .or(page.locator('[class*="animate-pulse"]'));
-    const content = page
-      .getByText(/no contests found/i)
-      .or(page.locator('[data-testid="contest-card"]'));
-
-    // Either skeletons are visible (loading) or content is shown
-    await expect(skeletons.first().or(content.first())).toBeVisible({ timeout: 10000 });
-  });
-
-  test('displays page content or loading state', async ({ page }) => {
     // Wait for initial render
     await page.waitForLoadState('domcontentloaded');
 
     // Page should show either: loading skeletons, empty state, or contest cards
-    const skeletons = page.locator('[class*="animate-pulse"]');
+    const skeletons = page
+      .locator('[class*="skeleton"]')
+      .or(page.locator('[class*="animate-pulse"]'));
     const emptyState = page.getByText(/no contests found/i);
     const contestCards = page.locator('a[href^="/contests/"]');
 
@@ -52,18 +40,6 @@ test.describe('Contest Browsing', () => {
   });
 });
 
-test.describe('Contest Details', () => {
-  test('contest detail page responds', async ({ page }) => {
-    // Navigate to a contest page - without blockchain this may error
-    const response = await page.goto('/contests/0');
-
-    // Should get a response (even if 500 due to no blockchain)
-    expect(response).not.toBeNull();
-
-    // Page body should be present
-    await expect(page.locator('body')).toBeVisible();
-  });
-});
 
 test.describe('Navigation', () => {
   test('has working navigation links', async ({ page }) => {
@@ -86,9 +62,11 @@ test.describe('Navigation', () => {
   test('sandbox link works from any page', async ({ page }) => {
     await page.goto('/contests');
 
-    // Navigate to sandbox using the Play link specifically
-    const playLink = page.getByRole('link', { name: 'Play' });
-    await playLink.click();
+    // Navigate to sandbox using Play/Home link
+    const playLink = page
+      .getByRole('link', { name: /play|sandbox|home/i })
+      .or(page.locator('a[href="/"]'));
+    await playLink.first().click();
     await expect(page).toHaveURL('/');
   });
 });

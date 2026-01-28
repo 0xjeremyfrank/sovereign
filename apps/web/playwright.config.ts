@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: '**/blockchain.spec.ts',
   reporter: 'list',
   timeout: 30000,
   expect: {

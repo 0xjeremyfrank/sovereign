@@ -27,15 +27,3 @@ test.describe('Admin Page', () => {
   });
 });
 
-test.describe('Admin Forms (Connected State)', () => {
-  // These tests would require wallet mocking
-  // For now we just verify the UI elements exist when wallet is not connected
-
-  test('schedule contest form structure', async ({ page }) => {
-    await page.goto('/admin');
-
-    // When connected, should show schedule contest form
-    // Since we're not connected, we just verify the page loads correctly
-    await expect(page.getByRole('heading', { name: /admin/i })).toBeVisible();
-  });
-});

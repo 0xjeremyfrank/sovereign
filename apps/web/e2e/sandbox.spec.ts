@@ -9,8 +9,8 @@ test.describe('Sandbox Play', () => {
     // Wait for the board to generate
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
-    // Board should be visible
-    const grid = page.locator('[data-testid="grid"]').or(page.locator('.grid'));
+    // Board should be visible (use role-based selector)
+    const grid = page.locator('[role="grid"]').or(page.locator('.grid'));
     await expect(grid.first()).toBeVisible();
 
     // Rules should be visible (use first() to handle multiple matches)
@@ -23,16 +23,27 @@ test.describe('Sandbox Play', () => {
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
     // Find a cell and click it
-    const cells = page.locator('[data-testid^="cell-"]').or(page.locator('[role="gridcell"]'));
+    const cells = page.locator('[role="gridcell"]');
     const firstCell = cells.first();
     await expect(firstCell).toBeVisible();
 
-    // Click to cycle through states
+    // Get initial state
+    const initialClass = await firstCell.getAttribute('class');
+
+    // Click to cycle through states - verify class changes
     await firstCell.click();
+    const afterFirstClick = await firstCell.getAttribute('class');
+    expect(afterFirstClick).not.toBe(initialClass);
+
     // Second click
     await firstCell.click();
-    // Third click should cycle back
+    const afterSecondClick = await firstCell.getAttribute('class');
+    expect(afterSecondClick).not.toBe(afterFirstClick);
+
+    // Third click should cycle back to initial state
     await firstCell.click();
+    const afterThirdClick = await firstCell.getAttribute('class');
+    expect(afterThirdClick).toBe(initialClass);
   });
 
   test('can generate a new board', async ({ page }) => {
@@ -44,12 +55,9 @@ test.describe('Sandbox Play', () => {
     await expect(newBoardButton).toBeVisible();
     await newBoardButton.click();
 
-    // Should show generating state briefly
-    await expect(page.getByText('Generating puzzle...'))
-      .toBeVisible({ timeout: 5000 })
-      .catch(() => {
-        // Sometimes generation is fast enough that we miss this
-      });
+    // Should show generating state briefly (may be too fast to observe)
+    const generatingMessage = page.getByText('Generating puzzle...');
+    await generatingMessage.waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
 
     // Board should be visible again
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
@@ -60,7 +68,7 @@ test.describe('Sandbox Play', () => {
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
     // Make some moves first
-    const cells = page.locator('[data-testid^="cell-"]').or(page.locator('[role="gridcell"]'));
+    const cells = page.locator('[role="gridcell"]');
     const firstCell = cells.first();
     await firstCell.click();
 
@@ -75,7 +83,7 @@ test.describe('Sandbox Play', () => {
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
     // Make a move
-    const cells = page.locator('[data-testid^="cell-"]').or(page.locator('[role="gridcell"]'));
+    const cells = page.locator('[role="gridcell"]');
     const firstCell = cells.first();
     await firstCell.click();
 
@@ -113,9 +121,8 @@ test.describe('Sandbox Play', () => {
     await expect(page.getByText(/region/i).first()).toBeVisible();
   });
 
-  test('shows win state when puzzle is solved', async ({ page }) => {
-    // This test verifies the win state UI exists
-    // We can't easily solve a puzzle in E2E, but we can verify the UI elements
+  test('hides win message initially', async ({ page }) => {
+    // Verify the win state UI is hidden when puzzle is not solved
     await expect(page.getByText('Generating puzzle...')).not.toBeVisible({ timeout: 10000 });
 
     // The "You Win" message should be hidden initially

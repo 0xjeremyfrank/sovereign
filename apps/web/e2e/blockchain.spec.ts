@@ -26,10 +26,8 @@ test.describe('Blockchain Integration', () => {
     const emptyState = page.getByText(/no contests found/i);
     const loading = page.locator('[class*="animate-pulse"]');
 
-    // Wait for loading to finish
-    await expect(loading.first())
-      .not.toBeVisible({ timeout: 15000 })
-      .catch(() => {});
+    // Wait for loading to finish (may already be hidden)
+    await loading.first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => null);
 
     // Should have either a contest or empty state
     const hasContest = await contestCard
@@ -70,6 +68,22 @@ test.describe('Blockchain Integration', () => {
   test('contest detail page loads with chain data', async ({ page }) => {
     // Navigate to contest 0 (seeded by dev:local)
     await page.goto('/contests/0');
+
+    // Page body should be visible
+    await expect(page.locator('body')).toBeVisible();
+
+    // Wait for page to settle
+    await page.waitForLoadState('domcontentloaded');
+
+    // Page should have loaded something (verify it's not blank)
+    const pageContent = page.locator('body');
+    const textContent = await pageContent.textContent();
+    expect(textContent?.length).toBeGreaterThan(0);
+  });
+
+  test('contest play page loads with chain data', async ({ page }) => {
+    // Navigate to contest 0 play page (seeded by dev:local)
+    await page.goto('/contests/0/play');
 
     // Page body should be visible
     await expect(page.locator('body')).toBeVisible();
