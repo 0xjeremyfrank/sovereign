@@ -71,13 +71,13 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <Nav />
 
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Admin</h1>
-          <p className="text-slate-600 mt-1">Manage contests</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Admin</h1>
+          <p className="text-sm sm:text-base text-slate-600 mt-1">Manage contests</p>
         </div>
 
         {!isConnected ? (
@@ -130,7 +130,7 @@ const RequestRandomnessCard = ({
   };
 
   return (
-    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
       <h2 className="text-lg font-semibold mb-4">Request Randomness</h2>
       <p className="text-sm text-slate-600 mb-4">
         Call after release block to request VRF randomness and open commits. The contest will
@@ -154,12 +154,12 @@ const RequestRandomnessCard = ({
           placeholder="Contest ID"
           value={contestId}
           onChange={(e) => setContestId(e.target.value)}
-          className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          className="flex-1 min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
         />
         <button
           onClick={handleCapture}
           disabled={!contestId || isPending || isConfirming}
-          className="px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Request'}
         </button>
@@ -216,7 +216,7 @@ const CloseContestCard = ({
   };
 
   return (
-    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
       <h2 className="text-lg font-semibold mb-4">Close Contest</h2>
       <p className="text-sm text-slate-600 mb-4">
         Close a contest after reveal window ends or all winners filled.
@@ -239,12 +239,12 @@ const CloseContestCard = ({
           placeholder="Contest ID"
           value={contestId}
           onChange={(e) => setContestId(e.target.value)}
-          className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          className="flex-1 min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
         />
         <button
           onClick={handleClose}
           disabled={!contestId || isPending || isConfirming}
-          className="px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-[44px] px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Close'}
         </button>
@@ -336,11 +336,11 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
   };
 
   return (
-    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+    <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
       <h2 className="text-lg font-semibold mb-4">Schedule Contest</h2>
       <p className="text-sm text-slate-600 mb-4">Create a new contest with prize pool escrow.</p>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
           <label htmlFor="generatorCid" className="block text-sm font-medium text-slate-700 mb-1">
             Generator CID
@@ -350,7 +350,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="text"
             value={formData.generatorCodeCid}
             onChange={(e) => updateField('generatorCodeCid', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -362,7 +362,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="text"
             value={formData.engineVersion}
             onChange={(e) => updateField('engineVersion', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -374,7 +374,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.size}
             onChange={(e) => updateField('size', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -386,7 +386,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.releaseBlockOffset}
             onChange={(e) => updateField('releaseBlockOffset', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
             placeholder="Blocks from now"
           />
           {currentBlock && (
@@ -404,7 +404,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.commitWindow}
             onChange={(e) => updateField('commitWindow', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -416,7 +416,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.commitBuffer}
             onChange={(e) => updateField('commitBuffer', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -428,7 +428,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.revealWindow}
             onChange={(e) => updateField('revealWindow', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -440,7 +440,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.topN}
             onChange={(e) => updateField('topN', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -452,7 +452,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="number"
             value={formData.entryDepositWei}
             onChange={(e) => updateField('entryDepositWei', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
         <div>
@@ -464,12 +464,12 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
             type="text"
             value={formData.prizePoolEth}
             onChange={(e) => updateField('prizePoolEth', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-sm"
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
           Total cost:{' '}
           <span className="font-semibold">
@@ -480,7 +480,7 @@ const ScheduleContestCard = ({ contractAddress }: { contractAddress: `0x${string
         <button
           onClick={handleSchedule}
           disabled={isPending || isConfirming || !publicClient}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Schedule Contest'}
         </button>

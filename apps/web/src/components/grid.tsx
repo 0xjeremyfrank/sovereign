@@ -56,10 +56,12 @@ export const Grid: React.FC<Props> = ({
       const x = clientX - rect.left;
       const y = clientY - rect.top;
 
-      // Account for gap between cells (gap-1.5 = 6px)
-      const cellSize = (rect.width - (size - 1) * 6) / size;
-      const col = Math.floor(x / (cellSize + 6));
-      const row = Math.floor(y / (cellSize + 6));
+      // Account for gap between cells (gap-1 = 4px on mobile, gap-1.5 = 6px on desktop)
+      const isMobile = window.innerWidth < 640;
+      const gap = isMobile ? 4 : 6;
+      const cellSize = (rect.width - (size - 1) * gap) / size;
+      const col = Math.floor(x / (cellSize + gap));
+      const row = Math.floor(y / (cellSize + gap));
 
       if (row >= 0 && row < size && col >= 0 && col < size) {
         return { row, col };
@@ -231,14 +233,23 @@ export const Grid: React.FC<Props> = ({
     return <div>Loading...</div>;
   }
 
+  // Calculate minimum cell size based on grid size for mobile touch targets
+  // Larger boards need smaller minimum cells to fit on screen
+  const minCellSize = size <= 6 ? '44px' : size <= 8 ? '36px' : '32px';
+
   return (
     <div
       ref={gridRef}
       role="grid"
       aria-label="Puzzle grid"
       tabIndex={0}
-      className={classNames('grid gap-1.5', isLocked && 'pointer-events-none opacity-90')}
-      style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+      className={classNames(
+        'grid gap-1 sm:gap-1.5',
+        isLocked && 'pointer-events-none opacity-90',
+      )}
+      style={{
+        gridTemplateColumns: `repeat(${size}, minmax(${minCellSize}, 1fr))`,
+      }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
