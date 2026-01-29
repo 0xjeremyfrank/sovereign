@@ -3,6 +3,7 @@
 import { useContests } from '../../hooks/use-contests';
 import { ContestCard } from '../../components/contest-card';
 import { ContestCardSkeleton } from '../../components/skeleton';
+import { ContestsEmptyState } from '../../components/contests-empty-state';
 import { Nav } from '../../components/nav';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,7 @@ const ContestsPage = () => {
             <ContestCardSkeleton />
           </div>
         ) : contests.length === 0 ? (
-          <div className="text-center py-20 text-slate-600">No contests found</div>
+          <ContestsEmptyState />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {contests.map((contest) => (
