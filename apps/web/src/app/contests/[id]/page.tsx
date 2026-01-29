@@ -137,9 +137,9 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-        <div className="max-w-4xl mx-auto px-4 py-10">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
           {/* Header skeleton */}
-          <header className="mb-8 flex items-start justify-between gap-4">
+          <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div className="flex items-start gap-3">
               <Skeleton className="h-8 w-8 rounded-lg" />
               <div>
@@ -156,7 +156,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="lg:col-span-2">
               <ContestDetailSkeleton />
             </div>
@@ -172,7 +172,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   if (error || !contestData) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-        <div className="max-w-4xl mx-auto px-4 py-10">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
           <div className="text-center py-20 text-red-600">Failed to load contest #{id}</div>
         </div>
       </div>
@@ -200,12 +200,12 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-10">
-        <header className="mb-8 flex items-start justify-between gap-4">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
+        <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:justify-between gap-4">
           <div className="flex items-start gap-3">
             <Link
               href="/contests"
-              className="mt-1.5 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors"
+              className="mt-1.5 min-h-[44px] min-w-[44px] p-2.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50 transition-colors flex items-center justify-center"
               aria-label="Back to Contests"
             >
               <svg
@@ -224,13 +224,15 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               </svg>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Contest #{id}</h1>
-              <p className="text-slate-600 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Contest #{id}</h1>
+              <p className="text-sm sm:text-base text-slate-600 mt-1">
                 {params_.size}×{params_.size} puzzle
               </p>
             </div>
           </div>
-          <ConnectWallet />
+          <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+            <ConnectWallet />
+          </div>
         </header>
 
         {/* Timeline */}
@@ -243,11 +245,11 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
         />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
           {/* Left Column - Contest Details */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Prize Pool Card */}
-            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
               <h2 className="text-lg font-semibold mb-4">Prize Pool</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -278,7 +280,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
 
             {/* Randomness Card */}
-            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
               <h2 className="text-lg font-semibold mb-4">Randomness</h2>
               {state.state === 0 && currentBlock && currentBlock >= params_.releaseBlock ? (
                 <div className="space-y-3">
@@ -296,7 +298,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       <button
                         onClick={handleRequestRandomness}
                         disabled={isCapturePending || isCaptureConfirming || !canCaptureRandomness}
-                        className="w-full px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                        className="w-full min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
                         {(isCapturePending || isCaptureConfirming) && <Spinner size="sm" />}
                         {isCapturePending
@@ -363,7 +365,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
 
             {/* Engine Metadata Card */}
-            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
               <h2 className="text-lg font-semibold mb-4">Engine Metadata</h2>
               <div className="space-y-3">
                 <div>
@@ -395,7 +397,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
             {/* Winners Table */}
             {winners && winners.length > 0 && (
-              <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+              <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
                 <h2 className="text-lg font-semibold mb-4">
                   Winners ({state.winnerCount}/{params_.topN})
                 </h2>
@@ -442,9 +444,9 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           {/* Right Column - Actions & Status */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Countdown Card */}
-            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
               <h2 className="text-lg font-semibold mb-4">Timing</h2>
               <div className="space-y-4">
                 {state.state < 2 && (
@@ -473,7 +475,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
             {/* Play Puzzle Card */}
             {state.state >= 2 && (
-              <div className="rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 shadow-lg ring-1 ring-amber-200 p-6">
+              <div className="rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 shadow-lg ring-1 ring-amber-200 p-4 sm:p-6">
                 <h2 className="text-lg font-semibold mb-2 text-amber-900">Play Puzzle</h2>
                 <p className="text-sm text-amber-800 mb-4">
                   Solve the {params_.size}×{params_.size} puzzle to compete for the prize.
@@ -502,7 +504,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               )}
 
             {/* Your Status Card */}
-            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+            <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
               <h2 className="text-lg font-semibold mb-4">Your Status</h2>
               {!isConnected ? (
                 <p className="text-slate-500 text-sm">Connect wallet to participate</p>
@@ -553,7 +555,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
             {/* Contest Actions Card */}
             {canCloseContest && (
-              <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-6">
+              <div className="rounded-xl bg-white/80 backdrop-blur shadow-lg ring-1 ring-black/5 p-4 sm:p-6">
                 <h2 className="text-lg font-semibold mb-4">Contest Actions</h2>
                 <div className="space-y-3">
                   <p className="text-sm text-slate-600">
@@ -566,7 +568,7 @@ const ContestDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       <button
                         onClick={handleCloseContest}
                         disabled={isClosePending || isCloseConfirming}
-                        className="w-full px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                        className="w-full min-h-[44px] px-4 py-2 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
                         {(isClosePending || isCloseConfirming) && <Spinner size="sm" />}
                         {isClosePending

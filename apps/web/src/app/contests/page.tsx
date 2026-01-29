@@ -13,17 +13,17 @@ const ContestsPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <Nav />
 
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Contests</h1>
-          <p className="text-slate-600 mt-2">View all First Blood contests</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Contests</h1>
+          <p className="text-sm sm:text-base text-slate-600 mt-2">View all First Blood contests</p>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <ContestCardSkeleton />
             <ContestCardSkeleton />
             <ContestCardSkeleton />
@@ -31,7 +31,7 @@ const ContestsPage = () => {
         ) : contests.length === 0 ? (
           <ContestsEmptyState />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {contests.map((contest) => (
               <ContestCard key={contest.contestId.toString()} contest={contest} />
             ))}

@@ -34,18 +34,18 @@ const Home = () => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         <Nav />
 
         {/* Page Header */}
-        <div className="mb-6">
-          <p className="text-slate-600">
+        <div className="mb-4 sm:mb-6">
+          <p className="text-sm sm:text-base text-slate-600">
             Place one sovereign per row, column, and region. No touching, even diagonally.
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-5 md:p-6">
+        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-3 sm:p-5 md:p-6">
           <Toolbar
             board={board}
             onClear={onClear}
@@ -56,18 +56,18 @@ const Home = () => {
           />
 
           {isGenerating || !regionMap ? (
-            <div className="p-20 text-center text-slate-600">Generating puzzle...</div>
+            <div className="p-10 sm:p-20 text-center text-slate-600">Generating puzzle...</div>
           ) : (
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="mt-4 sm:mt-5 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               {/* Board */}
               <div className="md:col-span-2 relative">
                 {validation.isComplete && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                    <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-8 py-6 rounded-2xl shadow-2xl transform animate-pulse border-4 border-white/50">
+                    <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-6 py-4 sm:px-8 sm:py-6 rounded-2xl shadow-2xl transform animate-pulse border-4 border-white/50">
                       <div className="text-center">
-                        <div className="text-5xl font-bold mb-2">🎉</div>
-                        <div className="text-4xl font-bold tracking-tight">You Win!</div>
-                        <div className="text-lg mt-2 opacity-90">Puzzle Solved</div>
+                        <div className="text-4xl sm:text-5xl font-bold mb-2">🎉</div>
+                        <div className="text-3xl sm:text-4xl font-bold tracking-tight">You Win!</div>
+                        <div className="text-base sm:text-lg mt-2 opacity-90">Puzzle Solved</div>
                       </div>
                     </div>
                   </div>

@@ -35,28 +35,33 @@ export const Nav = () => {
   const isAdmin = pathname === '/admin';
 
   return (
-    <nav className="flex items-center justify-between gap-4 mb-8">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 group">
-        <IconCrown className="w-7 h-7 text-amber-600 group-hover:text-amber-700 transition-colors" />
-        <span className="text-xl font-bold tracking-tight text-slate-900">Sovereign</span>
-      </Link>
+    <nav className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+      {/* Top row on mobile: Logo + Nav Links */}
+      <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <IconCrown className="w-7 h-7 text-amber-600 group-hover:text-amber-700 transition-colors" />
+          <span className="text-xl font-bold tracking-tight text-slate-900">Sovereign</span>
+        </Link>
 
-      {/* Nav Links */}
-      <div className="flex items-center gap-1">
-        <NavLink href="/" isActive={isHome}>
-          Play
-        </NavLink>
-        <NavLink href="/contests" isActive={isContests}>
-          Contests
-        </NavLink>
-        <NavLink href="/admin" isActive={isAdmin}>
-          Admin
-        </NavLink>
+        {/* Nav Links */}
+        <div className="flex items-center gap-1">
+          <NavLink href="/" isActive={isHome}>
+            Play
+          </NavLink>
+          <NavLink href="/contests" isActive={isContests}>
+            Contests
+          </NavLink>
+          <NavLink href="/admin" isActive={isAdmin}>
+            Admin
+          </NavLink>
+        </div>
       </div>
 
-      {/* Wallet */}
-      <ConnectWallet />
+      {/* Wallet - full width on mobile */}
+      <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+        <ConnectWallet />
+      </div>
     </nav>
   );
 };
