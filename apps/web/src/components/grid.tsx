@@ -57,7 +57,7 @@ export const Grid: React.FC<Props> = ({
       const y = clientY - rect.top;
 
       // Derive actual gap from computed styles to keep hit-testing aligned with visuals
-      const computed = getComputedStyle(gridRef.current);
+      const computed = window.getComputedStyle(gridRef.current);
       const gapX =
         parseFloat(computed.columnGap || computed.gap || '0') || 0;
       const gapY =
