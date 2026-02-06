@@ -26,7 +26,7 @@ export const ConnectWallet = () => {
     return (
       <button
         disabled
-        className="min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Connect Wallet
       </button>
@@ -35,12 +35,12 @@ export const ConnectWallet = () => {
 
   if (isConnected && !isCorrectNetwork) {
     return (
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+      <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
         <span className="text-sm text-red-600 font-medium">Wrong Network</span>
         <button
           onClick={() => switchChain.mutate({ chainId: SUPPORTED_CHAIN.id })}
           disabled={isSwitching}
-          className="min-h-[44px] px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
         >
           {isSwitching ? 'Switching...' : `Switch to ${SUPPORTED_CHAIN.name}`}
         </button>
@@ -50,7 +50,7 @@ export const ConnectWallet = () => {
 
   if (isConnected) {
     return (
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+      <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
           <span className="text-sm text-slate-600 hidden sm:inline">
@@ -62,7 +62,7 @@ export const ConnectWallet = () => {
         </div>
         <button
           onClick={() => disconnect.mutate()}
-          className="min-h-[44px] px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 transition-colors text-sm font-medium"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 transition-colors text-sm font-medium"
         >
           Disconnect
         </button>
@@ -76,7 +76,7 @@ export const ConnectWallet = () => {
     <button
       onClick={() => injectedConnector && connect.mutate({ connector: injectedConnector })}
       disabled={!injectedConnector || isPending}
-      className="min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full sm:w-auto min-h-[44px] px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isPending ? 'Connecting...' : 'Connect Wallet'}
     </button>

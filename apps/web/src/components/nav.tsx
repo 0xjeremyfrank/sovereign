@@ -17,7 +17,7 @@ const NavLink = ({ href, children, isActive }: NavLinkProps) => (
   <Link
     href={href}
     className={classNames(
-      'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+      'min-h-[44px] inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
       isActive
         ? 'bg-slate-900 text-white'
         : 'text-slate-600 hover:text-slate-900 hover:bg-white/50',
@@ -59,7 +59,7 @@ export const Nav = () => {
       </div>
 
       {/* Wallet - full width on mobile */}
-      <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+      <div className="w-full sm:w-auto">
         <ConnectWallet />
       </div>
     </nav>
