@@ -56,10 +56,17 @@ export const Grid: React.FC<Props> = ({
       const x = clientX - rect.left;
       const y = clientY - rect.top;
 
-      // Account for gap between cells (gap-1.5 = 6px)
-      const cellSize = (rect.width - (size - 1) * 6) / size;
-      const col = Math.floor(x / (cellSize + 6));
-      const row = Math.floor(y / (cellSize + 6));
+      // Derive actual gap from computed styles to keep hit-testing aligned with visuals
+      const computed = window.getComputedStyle(gridRef.current);
+      const gapX =
+        parseFloat(computed.columnGap || computed.gap || '0') || 0;
+      const gapY =
+        parseFloat(computed.rowGap || computed.gap || '0') || 0;
+
+      const cellWidth = (rect.width - (size - 1) * gapX) / size;
+      const cellHeight = (rect.height - (size - 1) * gapY) / size;
+      const col = Math.floor(x / (cellWidth + gapX));
+      const row = Math.floor(y / (cellHeight + gapY));
 
       if (row >= 0 && row < size && col >= 0 && col < size) {
         return { row, col };
@@ -237,8 +244,13 @@ export const Grid: React.FC<Props> = ({
       role="grid"
       aria-label="Puzzle grid"
       tabIndex={0}
-      className={classNames('grid gap-1.5', isLocked && 'pointer-events-none opacity-90')}
-      style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+      className={classNames(
+        'grid gap-1 sm:gap-1.5',
+        isLocked && 'pointer-events-none opacity-90',
+      )}
+      style={{
+        gridTemplateColumns: `repeat(${size}, 1fr)`,
+      }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >

@@ -22,18 +22,18 @@ export const Toolbar: React.FC<Props> = ({
   const canUndo = board.history.length > 0;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       <div className="inline-flex items-center gap-2">
         <button
           onClick={onNewBoard}
           aria-label="Generate new board"
-          className="px-3 py-2 rounded-xl shadow-sm bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-sm transition-colors"
+          className="min-h-[44px] px-3 py-2 rounded-xl shadow-sm bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-sm transition-colors"
         >
           New Board
         </button>
         <div className="relative">
           <select
-            className="pl-3 pr-8 py-2 rounded-xl shadow-sm bg-white border border-slate-200 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+            className="min-h-[44px] pl-3 pr-8 py-2 rounded-xl shadow-sm bg-white border border-slate-200 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
             value={size}
             onChange={(e) => onSizeChange(Number(e.target.value))}
             aria-label="Board size"
@@ -51,7 +51,7 @@ export const Toolbar: React.FC<Props> = ({
         <button
           onClick={onClear}
           aria-label="Clear board"
-          className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm shadow hover:bg-slate-800 transition-colors"
+          className="min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-sm shadow hover:bg-slate-800 transition-colors"
         >
           Clear
         </button>
@@ -59,7 +59,7 @@ export const Toolbar: React.FC<Props> = ({
           onClick={onUndo}
           disabled={!canUndo}
           aria-label="Undo last move"
-          className="px-3 py-2 rounded-xl bg-white text-slate-800 text-sm border border-slate-200 shadow-sm hover:bg-slate-50 inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="min-h-[44px] px-3 py-2 rounded-xl bg-white text-slate-800 text-sm border border-slate-200 shadow-sm hover:bg-slate-50 inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <IconUndo /> Undo
         </button>

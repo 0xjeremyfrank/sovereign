@@ -55,7 +55,7 @@ const ContestPlayPage = ({ params }: { params: Promise<{ id: string }> }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
           <div className="text-center py-20 text-slate-600">Loading contest...</div>
         </div>
       </div>
@@ -66,7 +66,7 @@ const ContestPlayPage = ({ params }: { params: Promise<{ id: string }> }) => {
   if (error || !contestData) {
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-        <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
           <div className="text-center py-20 text-red-600">Failed to load contest #{id}</div>
         </div>
       </div>
@@ -107,11 +107,11 @@ const AwaitingRandomnessView = ({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <header className="mb-8">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
+        <header className="mb-6 sm:mb-8">
           <Link
             href={`/contests/${contestId}`}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors mb-4"
+            className="min-h-[44px] inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors mb-4"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -127,9 +127,9 @@ const AwaitingRandomnessView = ({
           </Link>
         </header>
 
-        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-8 text-center">
-          <div className="text-6xl mb-4">⏳</div>
-          <h1 className="text-2xl font-bold mb-2">Puzzle Not Yet Available</h1>
+        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-6 sm:p-8 text-center">
+          <div className="text-5xl sm:text-6xl mb-4">⏳</div>
+          <h1 className="text-xl sm:text-2xl font-bold mb-2">Puzzle Not Yet Available</h1>
 
           {contestState.state === 0 && !releaseBlockReached && (
             <>
@@ -236,13 +236,13 @@ const PuzzleView = ({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 to-slate-100 text-slate-900">
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
         {/* Header */}
-        <header className="mb-6 flex items-start justify-between gap-4">
+        <header className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:justify-between gap-4">
           <div>
             <Link
               href={`/contests/${contestId}`}
-              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors mb-2"
+              className="min-h-[44px] inline-flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors mb-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -260,14 +260,14 @@ const PuzzleView = ({
               </svg>
               Back to Contest
             </Link>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
               Contest #{contestId}
-              <span className="inline-flex items-center gap-2 text-base font-medium text-slate-600">
+              <span className="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-slate-600">
                 <IconCrown className="text-slate-800" /> {contestParams.size}×{contestParams.size}{' '}
                 puzzle
               </span>
             </h1>
-            <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-slate-600">
               <span className="font-semibold text-amber-600">
                 {prizePool} {CURRENCY.symbol} Prize
               </span>
@@ -284,19 +284,21 @@ const PuzzleView = ({
               </span>
             </div>
           </div>
-          <ConnectWallet />
+          <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+            <ConnectWallet />
+          </div>
         </header>
 
         {/* Main Card */}
-        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-5 md:p-6">
+        <div className="rounded-2xl bg-white/80 backdrop-blur shadow-xl ring-1 ring-black/5 p-3 sm:p-5 md:p-6">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-3 mb-5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-5">
             <div className="text-sm text-slate-600">Solve this puzzle to compete for the prize</div>
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={onClear}
                 aria-label="Clear board"
-                className="px-3 py-2 rounded-xl bg-slate-900 text-white text-sm shadow hover:bg-slate-800 transition-colors"
+                className="min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 text-white text-sm shadow hover:bg-slate-800 transition-colors"
               >
                 Clear
               </button>
@@ -304,7 +306,7 @@ const PuzzleView = ({
                 onClick={onUndo}
                 disabled={!canUndo}
                 aria-label="Undo last move"
-                className="px-3 py-2 rounded-xl bg-white text-slate-800 text-sm border border-slate-200 shadow-sm hover:bg-slate-50 inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="min-h-[44px] px-3 py-2 rounded-xl bg-white text-slate-800 text-sm border border-slate-200 shadow-sm hover:bg-slate-50 inline-flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <IconUndo /> Undo
               </button>
@@ -312,18 +314,18 @@ const PuzzleView = ({
           </div>
 
           {isGenerating || !regionMap ? (
-            <div className="p-20 text-center text-slate-600">Generating puzzle...</div>
+            <div className="p-10 sm:p-20 text-center text-slate-600">Generating puzzle...</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               {/* Board */}
               <div className="md:col-span-2 relative">
                 {isPuzzleSolved && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                    <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-8 py-6 rounded-2xl shadow-2xl transform animate-pulse border-4 border-white/50">
+                    <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-6 py-4 sm:px-8 sm:py-6 rounded-2xl shadow-2xl transform animate-pulse border-4 border-white/50">
                       <div className="text-center">
-                        <div className="text-5xl font-bold mb-2">🎉</div>
-                        <div className="text-4xl font-bold tracking-tight">Solved!</div>
-                        <div className="text-lg mt-2 opacity-90">Ready to Commit</div>
+                        <div className="text-4xl sm:text-5xl font-bold mb-2">🎉</div>
+                        <div className="text-3xl sm:text-4xl font-bold tracking-tight">Solved!</div>
+                        <div className="text-base sm:text-lg mt-2 opacity-90">Ready to Commit</div>
                       </div>
                     </div>
                   </div>
